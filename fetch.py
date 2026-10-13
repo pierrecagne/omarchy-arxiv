@@ -48,7 +48,7 @@ ERROR_MAX_AGE = 120.0
 
 CACHE_HOME = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
 CACHE_DIR = os.path.join(CACHE_HOME, "io.github.pierrecagne.arxiv")
-USER_AGENT = "omarchy-arxiv-reader/1.0 (+https://github.com/pierrecagne/omarchy-arxiv)"
+USER_AGENT = "omarchy-arxiv-assistant/1.0 (+https://github.com/pierrecagne/omarchy-arxiv)"
 
 WHITESPACE = re.compile(r"\s+")
 

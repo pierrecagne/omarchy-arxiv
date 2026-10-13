@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "io.github.pierrecagne.arxiv",
-  "name": "arXiv Reader",
+  "name": "arXiv Assistant",
   "version": "1.0.0",
   "author": "Pierre Cagne",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "barWidget": "ArxivPanel.qml"
   },
   "barWidget": {
-    "displayName": "arXiv Reader",
+    "displayName": "arXiv Assistant",
     "description": "Browse the newest preprints of a few arXiv categories; star papers to get reading reports from Claude Code, Codex or another AI.",
     "category": "Info",
     "aliases": [

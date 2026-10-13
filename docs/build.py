@@ -16,7 +16,7 @@ REPO = "https://github.com/pierrecagne/omarchy-arxiv"
 
 # (file, navigation label, page title, description)
 PAGES = [
-    ("index", "Overview", "arXiv Reader for Omarchy",
+    ("index", "Overview", "arXiv Assistant for Omarchy",
      "The newest arXiv preprints in the Omarchy bar, and AI reading reports written for your expertise."),
     ("install", "Install", "Install",
      "Requirements, installing the plugin and setting up an AI engine."),
@@ -44,7 +44,7 @@ LAYOUT = """<!doctype html>
 <body>
 <header class="site">
   <div class="site-inner">
-    <div class="brand"><a href="index.html">arXiv Reader</a><span>an Omarchy plugin</span></div>
+    <div class="brand"><a href="index.html">arXiv Assistant</a><span>an Omarchy plugin</span></div>
     <nav class="site" aria-label="Documentation">
 {nav}
       <a href="{repo}">GitHub</a>
@@ -93,7 +93,7 @@ def main():
     for index, (name, _, title, description) in enumerate(PAGES):
         with open(os.path.join(HERE, "src", name + ".html")) as handle:
             body = handle.read().strip()
-        page_title = title if name == "index" else title + " · arXiv Reader for Omarchy"
+        page_title = title if name == "index" else title + " · arXiv Assistant for Omarchy"
         out = LAYOUT.format(title=html.escape(page_title), description=html.escape(description),
                             nav=nav(name), repo=REPO, body=body, pager=pager(index))
         with open(os.path.join(HERE, name + ".html"), "w") as handle:

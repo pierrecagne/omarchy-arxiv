@@ -56,7 +56,7 @@ STYLES = {"auto": "auto.md", "theory": "theory.md", "empirical": "empirical.md"}
 
 DEFAULT_REPORTS_DIR = os.path.expanduser("~/Documents/arxiv-reports")
 DEFAULT_READER = "a working researcher in the paper's own field"
-USER_AGENT = "omarchy-arxiv-reader/1.0 (+https://github.com/pierrecagne/omarchy-arxiv)"
+USER_AGENT = "omarchy-arxiv-assistant/1.0 (+https://github.com/pierrecagne/omarchy-arxiv)"
 DOWNLOAD_GAP = 3.0
 # Text that is worth handing to the model. Figures and fonts are not.
 SOURCE_SUFFIXES = (".tex", ".bbl", ".bib", ".sty", ".cls", ".txt")

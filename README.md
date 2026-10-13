@@ -1,4 +1,4 @@
-# arXiv Reader for Omarchy
+# arXiv Assistant for Omarchy
 
 The newest preprints of your arXiv categories in the Omarchy bar, and AI
 reading reports on the ones you star, written for your own expertise.
