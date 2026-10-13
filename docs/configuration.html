@@ -51,10 +51,10 @@ omarchy bar set io.github.pierrecagne.arxiv viewerPort 8795 --json</code></pre>
   <tr><td><code>reader</code></td><td>empty</td><td>Who the reports are for. Empty: <em>a working researcher in the paper's own field</em>. <a href="#reader">Examples.</a></td></tr>
   <tr><td><code>reportStyle</code></td><td><code>Auto</code></td><td><code>Auto</code>, <code>Theory</code>, <code>Empirical</code> or <code>Custom</code>. <a href="#styles">Styles.</a></td></tr>
   <tr><td><code>promptFile</code></td><td>empty</td><td>Your prompt, used when the style is <code>Custom</code>. <a href="#custom-prompts">Writing one.</a></td></tr>
-  <tr><td><code>engine</code></td><td><code>Claude Code</code></td><td><code>Claude Code</code>, <code>Codex</code> or <code>Custom command</code>. <a href="engines.html">Engines.</a></td></tr>
-  <tr><td><code>model</code></td><td>empty</td><td>Passed to Claude Code (<code>--model</code>) or Codex (<code>-m</code>), e.g. <code>opus</code>, <code>sonnet</code>, <code>gpt-5</code>. Empty: the engine's default.</td></tr>
+  <tr><td><code>engine</code></td><td><code>Claude Code</code></td><td><code>Claude Code</code> or <code>Custom command</code>. <a href="engines.html">Engines.</a></td></tr>
+  <tr><td><code>model</code></td><td>empty</td><td>Passed to Claude Code (<code>--model</code>), e.g. <code>opus</code> or <code>sonnet</code>. Empty: the engine's default.</td></tr>
   <tr><td><code>customCommand</code></td><td>empty</td><td>The command used by the <code>Custom command</code> engine.</td></tr>
-  <tr><td><code>sandbox</code></td><td><code>true</code></td><td>Confine Claude Code and Codex to the paper and <code>extraReadDirs</code>. <a href="engines.html#sandbox">Sandbox.</a></td></tr>
+  <tr><td><code>sandbox</code></td><td><code>true</code></td><td>Confine Claude Code to the paper and <code>extraReadDirs</code>. <a href="engines.html#sandbox">Sandbox.</a></td></tr>
   <tr><td><code>extraReadDirs</code></td><td>empty</td><td>Comma-separated folders the AI may also read, e.g. your notes.</td></tr>
   <tr><td><code>viewerPort</code></td><td><code>8791</code></td><td>Port of the local report viewer.</td></tr>
 </table></div>

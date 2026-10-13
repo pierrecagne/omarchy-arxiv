@@ -25,7 +25,7 @@ PAGES = [
     ("configuration", "Configuration", "Configuration",
      "Every setting, who the reports are for, report styles and custom prompts."),
     ("engines", "AI engines & sandbox", "AI engines and the sandbox",
-     "Claude Code, Codex and custom commands, and what the sandbox lets them read."),
+     "Claude Code and custom commands, and what the sandbox lets Claude Code read."),
     ("security", "Privacy & security", "Privacy and security",
      "What the plugin sends where, which files it writes, and how it handles untrusted papers."),
     ("troubleshooting", "Troubleshooting", "Troubleshooting",

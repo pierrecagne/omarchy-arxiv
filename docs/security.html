@@ -50,7 +50,7 @@
   <tr><th>Destination</th><th>When</th><th>What</th></tr>
   <tr><td><code>export.arxiv.org</code></td><td>Every refresh (default 30 min), and when starring by identifier</td><td>Listing queries for your categories, at most one every 3 seconds, cached on disk</td></tr>
   <tr><td><code>arxiv.org</code></td><td>Summarising</td><td>The source archive or PDF of each starred paper</td></tr>
-  <tr><td>Your AI provider</td><td>Summarising</td><td>The prompt and the paper, plus whatever the engine reads from your extra folders, through Claude Code, Codex or your command, under your own account</td></tr>
+  <tr><td>Your AI provider</td><td>Summarising</td><td>The prompt and the paper, plus whatever the engine reads from your extra folders, through Claude Code or your command, under your own account</td></tr>
   <tr><td><code>cdn.jsdelivr.net</code></td><td>The first time the viewer opens</td><td>KaTeX 0.16.11 and marked 12.0.2, stored locally afterwards</td></tr>
 </table></div>
 <p>Requests to arXiv identify themselves as
@@ -88,10 +88,10 @@ read files. The plugin defends against a paper that tries to steer the
 model in four ways:</p>
 <ol>
   <li><strong>The sandbox</strong> (on by default) limits what Claude Code
-  and Codex can read to the paper and the folders you allow. See
+  can read to the paper and the folders you allow. See
   <a href="engines.html#sandbox">how it works</a> and how it was tested.</li>
-  <li><strong>No writes, no shell for Claude Code, no network for Codex's
-  commands</strong>, whatever the sandbox setting.</li>
+  <li><strong>No writes, no shell and no web for Claude Code</strong>,
+  whatever the sandbox setting.</li>
   <li><strong>The prompt</strong> tells the model to treat the paper as
   material, never as instructions, and to report any attempt.</li>
   <li><strong>The source archive is filtered</strong>: only plain text files
@@ -133,8 +133,6 @@ still rendered.</p>
   permissions; the sandbox does not apply to it. Other accounts can see its
   arguments, like any program's: keep API keys in its configuration or
   environment, not in the command.</li>
-  <li>In the Codex sandbox, the system folders <code>/usr</code>,
-  <code>/etc</code> and <code>/opt</code> remain readable.</li>
   <li>The Claude Code sandbox is Claude Code's own <code>--restricted</code>
   mode: it is as strong as Claude Code makes it.</li>
   <li>The model may quote your extra folders in a report, and what it reads

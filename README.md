@@ -36,12 +36,12 @@ Reports are tuned to you:
 - **Report style.** *Theory* (theorems, definitions, proof strategies),
   *Empirical* (claims, methods, evaluation, reproducibility), *Auto*, or your
   own prompt file.
-- **AI engine.** Claude Code, Codex, or any command that reads a prompt on
+- **AI engine.** Claude Code, or any command that reads a prompt on
   standard input and prints Markdown (`llm`, `ollama run …`, …), with an
   optional model.
-- **Sandbox, on by default.** Claude Code and Codex can read only the paper
-  being reported on, plus any folders you allow, such as your own notes, so
-  reports can relate the paper to your work. They can never write files.
+- **Sandbox, on by default.** Claude Code can read only the paper being
+  reported on, plus any folders you allow, such as your own notes, so
+  reports can relate the paper to your work. It can never write files.
 
 ## Requirements
 
@@ -49,8 +49,6 @@ Reports are tuned to you:
 - For reports, one AI engine, installed and logged in:
   - [Claude Code](https://claude.com/claude-code) (`claude`). The sandbox
     needs a version with `--restricted` (tested with 2.1.295).
-  - [Codex](https://github.com/openai/codex) (`codex`). The sandbox needs
-    bubblewrap (`bwrap`): `omarchy pkg add bubblewrap`.
   - or any command-line LLM tool, used as a custom command.
 - Optional: `pdftotext` and `pdfinfo` (poppler) for the rare PDF-only papers.
 
@@ -132,4 +130,4 @@ rm -rf ~/.local/state/io.github.pierrecagne.arxiv ~/.cache/io.github.pierrecagne
 
 Thank you to arXiv for use of its open access interoperability. This project
 is not affiliated with or endorsed by arXiv. Claude Code is a product of
-Anthropic and Codex of OpenAI; neither is affiliated with this project.
+Anthropic, which is not affiliated with this project.

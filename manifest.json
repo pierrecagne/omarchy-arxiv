@@ -14,7 +14,7 @@
   },
   "barWidget": {
     "displayName": "arXiv Assistant",
-    "description": "Browse the newest preprints of a few arXiv categories; star papers to get reading reports from Claude Code, Codex or another AI.",
+    "description": "Browse the newest preprints of a few arXiv categories; star papers to get reading reports from Claude Code or another AI.",
     "category": "Info",
     "aliases": [
       "arxiv",
@@ -105,18 +105,17 @@
         "label": "AI engine",
         "options": [
           "Claude Code",
-          "Codex",
           "Custom command"
         ],
         "defaultValue": "Claude Code",
-        "description": "Claude Code and Codex read the paper's files themselves. A custom command gets the paper's text with the prompt on standard input and must print Markdown."
+        "description": "Claude Code reads the paper's files itself. A custom command gets the paper's text with the prompt on standard input and must print Markdown."
       },
       {
         "key": "model",
         "type": "string",
         "label": "Model",
         "defaultValue": "",
-        "description": "Passed to Claude Code (--model) or Codex (-m), e.g. \"opus\" or \"gpt-5\". Empty: the engine's default."
+        "description": "Passed to Claude Code (--model), e.g. \"opus\" or \"sonnet\". Empty: its default."
       },
       {
         "key": "customCommand",
@@ -130,7 +129,7 @@
         "type": "boolean",
         "label": "Sandbox the AI to the paper",
         "defaultValue": true,
-        "description": "On: Claude Code and Codex can read only the paper's folder and the extra folders below. Off: they can read any file you can. They can never write files."
+        "description": "On: Claude Code can read only the paper's folder and the extra folders below. Off: it can read any file you can. It can never write files."
       },
       {
         "key": "extraReadDirs",

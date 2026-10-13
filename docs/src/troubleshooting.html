@@ -21,7 +21,7 @@ Nothing to do but wait; <kbd>r</kbd> forces a new attempt.</p>
 not <code>Math.CT</code> or <code>category theory</code>.</p>
 
 <h2>Reports</h2>
-<h3>“The claude command is not on PATH” (or codex, or your command)</h3>
+<h3>“The claude command is not on PATH” (or your command)</h3>
 <p>The helper runs with the environment of <code>omarchy-shell</code>, not of
 your terminal. If the engine is installed somewhere only your shell
 configuration adds to <code>PATH</code>, make it visible to the session, or
@@ -32,12 +32,10 @@ use its absolute path in a custom command.</p>
 or turn the sandbox off with
 <code>omarchy bar set io.github.pierrecagne.arxiv sandbox false --json</code>.</p>
 
-<h3>“Sandboxing Codex needs bubblewrap”</h3>
-<p>Install it with <code>omarchy pkg add bubblewrap</code>, or turn the
-sandbox off.</p>
-
-<h3>Codex fails to log in when sandboxed</h3>
-<p>See <a href="engines.html#codex">Codex login in the keyring</a>.</p>
+<h3>“Codex is no longer supported”</h3>
+<p>The <code>engine</code> setting still says Codex, which was removed. Pick
+<code>Claude Code</code> or <code>Custom command</code> in the widget's
+settings. <a href="engines.html#codex">Why.</a></p>
 
 <h3>“returned too little to be a report”</h3>
 <p>The engine answered with under 400 characters: usually an error message

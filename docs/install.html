@@ -39,8 +39,7 @@
 <div class="table-wrap"><table>
   <tr><th>What</th><th>Why</th><th>Notes</th></tr>
   <tr><td>Omarchy 4 (Quattro shell)</td><td>The bar and panel</td><td>Ships <code>python3</code>, used by the helpers.</td></tr>
-  <tr><td>An AI engine</td><td>Reports</td><td>Claude Code, Codex, or a command-line LLM tool. Browsing works without one.</td></tr>
-  <tr><td><code>bwrap</code> (bubblewrap)</td><td>Sandboxing Codex</td><td>Only with Codex: <code>omarchy pkg add bubblewrap</code>.</td></tr>
+  <tr><td>An AI engine</td><td>Reports</td><td>Claude Code, or a command-line LLM tool. Browsing works without one.</td></tr>
   <tr><td><code>pdftotext</code>, <code>pdfinfo</code> (poppler)</td><td>PDF-only papers</td><td>Optional. Most arXiv papers come with LaTeX source.</td></tr>
 </table></div>
 
@@ -67,14 +66,6 @@ plan or API account.</p>
 (tested with Claude Code 2.1.295). If your version lacks it, the plugin
 refuses to run sandboxed and says so: update Claude Code, or turn the sandbox
 off.</p>
-
-<h3>Codex</h3>
-<pre><code>omarchy bar set io.github.pierrecagne.arxiv engine Codex
-omarchy pkg add bubblewrap   # for the sandbox
-codex login</code></pre>
-<p>Reports use your ChatGPT plan or OpenAI API account. See
-<a href="engines.html#codex">Codex and the sandbox</a> if Codex keeps its login
-in the system keyring.</p>
 
 <h3>Any other model</h3>
 <p>Any command that reads a prompt on standard input and prints Markdown

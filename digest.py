@@ -14,15 +14,13 @@ that in /proc, and the settings describe the reader. With --background the
 script detaches once it has them, so the run outlives the widget. Engines:
 
   claude   Claude Code (`claude -p`), reading the paper with its file tools.
-  codex    Codex (`codex exec`), reading the paper with shell commands.
   command  Any command that takes the prompt on stdin and prints Markdown;
            the paper's text is included in the prompt.
 
-With the sandbox on (the default), Claude Code and Codex can read only the
-paper's folder and the extra folders listed in the settings. Claude Code is
-confined by its own --restricted mode; Codex runs inside bubblewrap. With it
-off they can read whatever the user can. Neither can ever write files: the
-report comes back on stdout (or Codex's last-message file).
+With the sandbox on (the default), Claude Code can read only the paper's
+folder and the extra folders listed in the settings, confined by its own
+--restricted mode. With it off it can read whatever the user can. It can
+never write files: the report comes back on stdout.
 
 Everything is written back after each paper, so an interrupted run keeps the
 reports it had already finished and retries only the rest.
@@ -83,7 +81,7 @@ DEFAULTS = {
     "promptFile": "",
 }
 
-ENGINE_LABELS = {"claude": "Claude Code", "codex": "Codex", "command": "a custom command"}
+ENGINE_LABELS = {"claude": "Claude Code", "command": "a custom command"}
 
 
 class EngineError(RuntimeError):
@@ -165,7 +163,7 @@ def truthy(value):
 def normalise_engine(value):
     text = str(value or "").lower()
     if "codex" in text:
-        return "codex"
+        return "codex"  # removed; recognised only to say so
     if "command" in text or "custom" in text:
         return "command"
     return "claude"
@@ -368,7 +366,6 @@ SOURCE_NOTES = {
                        "definitions sit in the same directory, and the bibliography may be in "
                        "a .bbl file - read whatever you need to answer accurately."),
     ("files", "pdf"): "This is a PDF, so work through it in page ranges.",
-    ("codex", "pdf"): "This is a PDF; `pdftotext` is available to extract its text.",
     ("inline", "tex"): ("Its LaTeX source is included at the end of this message, file by "
                         "file, between <paper> tags: the main file first, then the other "
                         "files, the bibliography and small style files."),
@@ -388,11 +385,8 @@ def template_text(config):
 
 
 def build_prompt(config, kind, entry_name, inline_text=None):
-    engine = config["engine"]
     if inline_text is not None:
         note = SOURCE_NOTES[("inline", kind)]
-    elif engine == "codex" and kind == "pdf":
-        note = SOURCE_NOTES[("codex", "pdf")]
     else:
         note = SOURCE_NOTES[("files", kind)]
 
@@ -451,64 +445,6 @@ def claude_argv(config):
     return argv
 
 
-def install_root(executable):
-    """The folder an engine's binary lives in, two levels up from the file
-    (…/<version>/bin/codex -> …/<version>), so the jail can see the install."""
-    real = os.path.realpath(executable)
-    return os.path.dirname(os.path.dirname(real))
-
-
-def jail(argv, workdir, read_only, read_write):
-    """Run argv inside bubblewrap with the home directory replaced by an empty
-    tmpfs: only the system directories, the paper folder and the listed
-    folders are visible."""
-    if shutil.which("bwrap") is None:
-        raise EngineError("Sandboxing Codex needs bubblewrap. Install it with "
-                          "`omarchy pkg add bubblewrap`, or turn the sandbox off.")
-    home = os.path.expanduser("~")
-    args = ["bwrap", "--die-with-parent", "--new-session",
-            "--unshare-pid", "--unshare-ipc", "--unshare-uts", "--unshare-cgroup-try",
-            "--ro-bind", "/usr", "/usr", "--ro-bind", "/etc", "/etc",
-            "--ro-bind-try", "/opt", "/opt",
-            "--symlink", "usr/bin", "/bin", "--symlink", "usr/bin", "/sbin",
-            "--symlink", "usr/lib", "/lib", "--symlink", "usr/lib", "/lib64",
-            "--proc", "/proc", "--dev", "/dev",
-            "--tmpfs", "/tmp", "--tmpfs", "/var/tmp", "--tmpfs", "/run",
-            # /etc/resolv.conf points here when systemd-resolved is in use.
-            "--ro-bind-try", "/run/systemd/resolve", "/run/systemd/resolve",
-            "--tmpfs", home]
-    for folder in read_only:
-        args += ["--ro-bind", folder, folder]
-    for folder in read_write:
-        args += ["--bind", folder, folder]
-    args += ["--chdir", workdir, "--"]
-    return args + argv
-
-
-def codex_argv(config, workdir, out_file):
-    executable = shutil.which("codex")
-    # By its real path: PATH may go through a symlink (mise's `latest`) whose
-    # target is all the jail exposes.
-    argv = [os.path.realpath(executable) if config["sandbox"] else "codex", "exec", "--skip-git-repo-check", "--ephemeral", "--color", "never",
-            "-s", "read-only", "-C", workdir, "-o", out_file]
-    if config["model"]:
-        argv += ["-m", config["model"]]
-    argv += ["-"]
-    if not config["sandbox"]:
-        return argv
-
-    codex_home = os.path.realpath(os.environ.get("CODEX_HOME") or os.path.expanduser("~/.codex"))
-    read_only = [install_root(executable)] + config["extraReadDirs"]
-    # A Node launcher (npm install) needs its interpreter as well.
-    try:
-        with open(os.path.realpath(executable), "rb") as handle:
-            if b"node" in handle.read(64).split(b"\n")[0] and shutil.which("node"):
-                read_only.append(install_root(shutil.which("node")))
-    except OSError:
-        pass
-    return jail(argv, workdir, read_only, [workdir, codex_home])
-
-
 def engine_binary(config):
     if config["engine"] == "command":
         try:
@@ -521,16 +457,11 @@ def engine_binary(config):
 
 def summarise(config, kind, entry_name, workdir):
     engine = config["engine"]
-    out_file = None
     if engine == "command":
         if not config["command"]:
             raise EngineError("The engine is a custom command, but no command is set.")
         prompt = build_prompt(config, kind, entry_name, paper_text(kind, workdir, entry_name))
         argv = ["sh", "-c", config["command"]]
-    elif engine == "codex":
-        prompt = build_prompt(config, kind, entry_name)
-        out_file = os.path.join(workdir, ".report.md")
-        argv = codex_argv(config, workdir, out_file)
     else:
         prompt = build_prompt(config, kind, entry_name)
         argv = claude_argv(config)
@@ -546,13 +477,7 @@ def summarise(config, kind, entry_name, workdir):
     if result.returncode != 0:
         raise RuntimeError((result.stderr or result.stdout or engine + " failed").strip()[-200:])
 
-    if out_file:
-        try:
-            body = open(out_file, errors="replace").read().strip()
-        except OSError:
-            body = ""
-    else:
-        body = result.stdout.strip()
+    body = result.stdout.strip()
     if len(body) < 400:
         raise RuntimeError(ENGINE_LABELS[engine] + " returned too little to be a report")
     return body
@@ -631,6 +556,10 @@ def main(argv):
         return 0
 
     tighten_reports()
+    if config["engine"] == "codex":
+        notify("Codex is no longer supported. Pick Claude Code or a custom command "
+               "in the widget's settings.", "critical")
+        return 1
     binary = engine_binary(config)
     if not binary or shutil.which(binary) is None:
         notify("The " + (binary or "engine") + " command is not on PATH, so no report "
@@ -657,8 +586,8 @@ def main(argv):
            + " with " + label + "…")
 
     # Start from a clean scratch dir: a run killed mid-paper leaves sources
-    # behind, and the lock means nothing else is using it. Private, since
-    # Codex leaves its report in it.
+    # behind, and the lock means nothing else is using it. Private, like
+    # everything else a run writes.
     workdir = os.path.join(STATE_DIR, "work")
     shutil.rmtree(workdir, ignore_errors=True)
     os.makedirs(workdir, mode=0o700, exist_ok=True)
