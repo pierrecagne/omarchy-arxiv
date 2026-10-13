@@ -17,7 +17,7 @@ reading reports on the ones you star, written for your own expertise.
 
 - **Browse.** One tab per arXiv category, newest submissions first, with
   authors, dates, cross-lists and the abstract one keypress away. TeX in
-  titles and abstracts is rendered.
+  titles and abstracts is turned into readable symbols.
 - **Star.** Press `s` on a preprint, or `a` to star any paper by its
   identifier or link.
 - **Get reports.** Press `S` and an AI reads each starred paper in full,
@@ -62,7 +62,7 @@ Browsing works without any AI engine.
 omarchy plugin add https://github.com/pierrecagne/omarchy-arxiv.git --enable
 ```
 
-The widget appears in the centre of the bar. Then set your categories and
+The widget appears in the center of the bar. Then set your categories and
 who the reports are for, in `~/.config/omarchy/shell.json` or with
 `omarchy bar set`:
 
