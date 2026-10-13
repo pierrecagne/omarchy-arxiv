@@ -54,13 +54,13 @@ whole paper.</p>
 <code>reportStyle</code> or a stronger <code>model</code>. To regenerate a
 report, delete its Markdown file and press <kbd>S</kbd>.</p>
 
-<h2>Reader</h2>
+<h2>Viewer</h2>
 <h3>“Port 8791 is taken by another program”</h3>
 <p>Choose a free port:
-<code>omarchy bar set io.github.pierrecagne.arxiv readerPort 8795 --json</code>.</p>
+<code>omarchy bar set io.github.pierrecagne.arxiv viewerPort 8795 --json</code>.</p>
 
 <h3>The mathematics does not render</h3>
-<p>The first time the reader starts, it downloads KaTeX; if that failed, the
+<p>The first time the viewer starts, it downloads KaTeX; if that failed, the
 pages load it from the CDN instead, which needs a connection. The download is
-retried the next time the reader starts, for example after you log in
+retried the next time the viewer starts, for example after you log in
 again.</p>

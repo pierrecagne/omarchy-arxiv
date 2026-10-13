@@ -85,7 +85,7 @@ Markdown file and press <kbd>S</kbd> again.</p>
 of your AI plan.</p>
 
 <h2>Reading</h2>
-<p>Press <kbd>v</kbd> to open the local report reader, a small web server on
+<p>Press <kbd>v</kbd> to open the local report viewer, a small web server on
 <code>127.0.0.1</code> (port 8791 by default) that lists your reports, newest
 first, and renders each one with its mathematics typeset by KaTeX. The first
 time, it downloads KaTeX and marked once; after that it works offline.</p>
@@ -109,7 +109,7 @@ on up to the refresh interval.</p>
   <tr><td><code>category &lt;code&gt;</code></td><td>Switch tab, e.g. <code>category math.CT</code> or <code>category starred</code></td></tr>
   <tr><td><code>star &lt;identifier&gt;</code></td><td>Look a paper up and star it</td></tr>
   <tr><td><code>summarise</code></td><td>Write the missing reports</td></tr>
-  <tr><td><code>reports</code></td><td>Open the report reader</td></tr>
+  <tr><td><code>reports</code></td><td>Open the report viewer</td></tr>
 </table></div>
 <p>For example, in <code>~/.config/hypr/bindings.lua</code>:</p>
 <pre><code>o.bind("SUPER + ALT + A", "arXiv", "omarchy-shell io.github.pierrecagne.arxiv toggle")</code></pre>

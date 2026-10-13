@@ -45,7 +45,7 @@ Panel {
   // digest.py owns reports.json, so neither writes what the other reads.
   readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/io.github.pierrecagne.arxiv"
   readonly property string reportsDir: String(setting("reportsDir", Quickshell.env("HOME") + "/Documents/arxiv-reports"))
-  readonly property int readerPort: Model.clampInt(setting("readerPort", 8791), 1024, 65535, 8791)
+  readonly property int viewerPort: Model.clampInt(setting("viewerPort", 8791), 1024, 65535, 8791)
 
   // Everything digest.py needs, in one argument: engine, sandbox, who the
   // reports are for and in which style. It normalises the values itself.
@@ -238,10 +238,10 @@ Panel {
     statusTimer.restart()
   }
 
-  // Starts the local reader if it is not already up, then opens the browser
+  // Starts the local viewer if it is not already up, then opens the browser
   // at it. serve.py is a no-op beyond opening the tab when its port is taken.
   function openReports() {
-    Quickshell.execDetached(["python3", root.servePath, root.reportsDir, "--port=" + root.readerPort])
+    Quickshell.execDetached(["python3", root.servePath, root.reportsDir, "--port=" + root.viewerPort])
     actionStatus = "Opening the reports…"
     statusTimer.restart()
   }

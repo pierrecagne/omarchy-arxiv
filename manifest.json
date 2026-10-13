@@ -37,7 +37,7 @@
       "customCommand": "",
       "sandbox": true,
       "extraReadDirs": "",
-      "readerPort": 8791
+      "viewerPort": 8791
     },
     "schema": [
       {
@@ -140,14 +140,14 @@
         "description": "Comma-separated folders, e.g. your own notes or papers, so reports can relate the paper to your work. Read-only."
       },
       {
-        "key": "readerPort",
+        "key": "viewerPort",
         "type": "integer",
-        "label": "Report reader port",
+        "label": "Report viewer port",
         "min": 1024,
         "max": 65535,
         "step": 1,
         "defaultValue": 8791,
-        "description": "Local port of the report reader (127.0.0.1 only)."
+        "description": "Local port of the report viewer (127.0.0.1 only)."
       }
     ]
   }

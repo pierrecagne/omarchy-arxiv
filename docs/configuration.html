@@ -29,7 +29,7 @@
 and apply as soon as the file is saved. The quickest way to change one is
 <code>omarchy bar set</code>:</p>
 <pre><code>omarchy bar set io.github.pierrecagne.arxiv categories "hep-th, gr-qc"
-omarchy bar set io.github.pierrecagne.arxiv readerPort 8795 --json</code></pre>
+omarchy bar set io.github.pierrecagne.arxiv viewerPort 8795 --json</code></pre>
 <p>An entry in <code>shell.json</code> looks like this:</p>
 <pre><code>{
   "id": "io.github.pierrecagne.arxiv",
@@ -56,7 +56,7 @@ omarchy bar set io.github.pierrecagne.arxiv readerPort 8795 --json</code></pre>
   <tr><td><code>customCommand</code></td><td>empty</td><td>The command used by the <code>Custom command</code> engine.</td></tr>
   <tr><td><code>sandbox</code></td><td><code>true</code></td><td>Confine Claude Code and Codex to the paper and <code>extraReadDirs</code>. <a href="engines.html#sandbox">Sandbox.</a></td></tr>
   <tr><td><code>extraReadDirs</code></td><td>empty</td><td>Comma-separated folders the AI may also read, e.g. your notes.</td></tr>
-  <tr><td><code>readerPort</code></td><td><code>8791</code></td><td>Port of the local report reader.</td></tr>
+  <tr><td><code>viewerPort</code></td><td><code>8791</code></td><td>Port of the local report viewer.</td></tr>
 </table></div>
 
 <h2 id="reader">Who the reports are for</h2>

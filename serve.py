@@ -320,8 +320,8 @@ def notify(message):
         pass
 
 
-def running_reader(port):
-    """What already listens on the port: our reader (and for which folder), or
+def running_viewer(port):
+    """What already listens on the port: our viewer (and for which folder), or
     something else entirely (None)."""
     try:
         with urllib.request.urlopen("http://127.0.0.1:%d/__id" % port, timeout=3) as response:
@@ -331,8 +331,8 @@ def running_reader(port):
         return None
 
 
-def stop_reader(pid):
-    """Stop an earlier reader of ours that serves a different folder."""
+def stop_viewer(pid):
+    """Stop an earlier viewer of ours that serves a different folder."""
     try:
         cmdline = open("/proc/%d/cmdline" % pid, "rb").read()
     except OSError:
@@ -367,16 +367,16 @@ def main(argv):
         return 0
 
     # Already serving this folder: just point the browser at it. An earlier
-    # reader of ours with another folder (the setting changed) makes way;
+    # viewer of ours with another folder (the setting changed) makes way;
     # anything else on the port is not ours to touch.
     if port_busy(port):
-        info = running_reader(port)
+        info = running_viewer(port)
         if info is None:
-            notify("Port %d is taken by another program. Pick another reader port "
+            notify("Port %d is taken by another program. Pick another viewer port "
                    "in the widget settings." % port)
             return 1
         same = os.path.realpath(info.get("reportsDir", "")) == os.path.realpath(reports_dir)
-        if same or not stop_reader(int(info.get("pid", 0))):
+        if same or not stop_viewer(int(info.get("pid", 0))):
             if "--no-open" not in flags:
                 subprocess.run(["omarchy-launch-browser", url], check=False)
             return 0

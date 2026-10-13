@@ -94,12 +94,12 @@ omarchy-shell io.github.pierrecagne.arxiv reports
 
 - The widget talks to arXiv (`export.arxiv.org` for listings, `arxiv.org`
   for the papers you summarise), and once to `cdn.jsdelivr.net` to download
-  KaTeX and marked for the report reader.
+  KaTeX and marked for the report viewer.
 - Summarising sends the paper and the prompt to your AI engine's provider,
   under your own account. Nothing else is sent anywhere.
 - Reports are written by a model from papers anyone can upload, so the
   sandbox is on by default, the prompt tells the model to treat the paper as
-  material rather than instructions, and the local report reader (bound to
+  material rather than instructions, and the local report viewer (bound to
   `127.0.0.1`) shows raw HTML as text and blocks scripts, outside images and
   network requests.
 - A custom command runs with your permissions: the sandbox setting does not

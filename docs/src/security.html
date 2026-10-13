@@ -16,7 +16,7 @@
   <li><code>digest.py</code>, when you press <kbd>S</kbd>: it downloads the
   starred papers and runs your AI engine.</li>
   <li><code>serve.py</code>, when you press <kbd>v</kbd>: the local report
-  reader. It keeps running until you log out.</li>
+  viewer. It keeps running until you log out.</li>
 </ul>
 
 <h2>Network</h2>
@@ -25,7 +25,7 @@
   <tr><td><code>export.arxiv.org</code></td><td>Every refresh (default 30 min), and when starring by identifier</td><td>Listing queries for your categories, at most one every 3 seconds, cached on disk</td></tr>
   <tr><td><code>arxiv.org</code></td><td>Summarising</td><td>The source archive or PDF of each starred paper</td></tr>
   <tr><td>Your AI provider</td><td>Summarising</td><td>The prompt and the paper, plus whatever the engine reads from your extra folders, through Claude Code, Codex or your command, under your own account</td></tr>
-  <tr><td><code>cdn.jsdelivr.net</code></td><td>The first time the reader opens</td><td>KaTeX 0.16.11 and marked 12.0.2, stored locally afterwards</td></tr>
+  <tr><td><code>cdn.jsdelivr.net</code></td><td>The first time the viewer opens</td><td>KaTeX 0.16.11 and marked 12.0.2, stored locally afterwards</td></tr>
 </table></div>
 <p>Requests to arXiv identify themselves as
 <code>omarchy-arxiv-assistant/1.0</code> with a link to this project. Nothing
@@ -34,7 +34,7 @@ else is sent anywhere: no analytics, no accounts.</p>
 <h2>Files</h2>
 <div class="table-wrap"><table>
   <tr><th>Path</th><th>Contents</th></tr>
-  <tr><td><code>~/.local/state/io.github.pierrecagne.arxiv/</code></td><td><code>starred.json</code>, <code>reports.json</code>, <code>digest.log</code>, the reader's assets (<code>web/</code>) and the scratch folder for papers being summarised (<code>work/</code>)</td></tr>
+  <tr><td><code>~/.local/state/io.github.pierrecagne.arxiv/</code></td><td><code>starred.json</code>, <code>reports.json</code>, <code>digest.log</code>, the viewer's assets (<code>web/</code>) and the scratch folder for papers being summarised (<code>work/</code>)</td></tr>
   <tr><td><code>~/.cache/io.github.pierrecagne.arxiv/</code></td><td>The cached listings</td></tr>
   <tr><td>Your reports folder</td><td>One Markdown file per report</td></tr>
 </table></div>
@@ -59,8 +59,8 @@ model in four ways:</p>
   into one folder, and nothing can be written outside it.</li>
 </ol>
 
-<h2 id="reader">The report reader</h2>
-<p>Reports are written by a model from untrusted papers, so the reader
+<h2 id="viewer">The report viewer</h2>
+<p>Reports are written by a model from untrusted papers, so the viewer
 treats them as untrusted too:</p>
 <ul>
   <li>It listens on <code>127.0.0.1</code> only, and answers only requests
@@ -69,7 +69,7 @@ treats them as untrusted too:</p>
   <li>Raw HTML in a report is shown as text. Links keep only
   <code>http</code>, <code>https</code>, <code>mailto</code> and in-page
   targets, and images are replaced by their description.</li>
-  <li>A Content-Security-Policy allows no script but the reader's own, no
+  <li>A Content-Security-Policy allows no script but the viewer's own, no
   outside images, frames, forms or network requests.</li>
   <li>It serves only the files directly inside the reports folder and its
   own KaTeX and marked assets.</li>
