@@ -47,8 +47,8 @@ DEFAULT_MAX_AGE = 900.0
 ERROR_MAX_AGE = 120.0
 
 CACHE_HOME = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
-CACHE_DIR = os.path.join(CACHE_HOME, "omarchy-arxiv")
-USER_AGENT = "omarchy-arxiv-widget/1.0 (bar widget; contact: local user)"
+CACHE_DIR = os.path.join(CACHE_HOME, "io.github.pierrecagne.arxiv")
+USER_AGENT = "omarchy-arxiv-reader/1.0 (+https://github.com/pierrecagne/omarchy-arxiv)"
 
 WHITESPACE = re.compile(r"\s+")
 
@@ -276,10 +276,10 @@ def main(argv):
     args = [a for a in argv[1:] if a != "--force"]
     force = "--force" in argv[1:]
 
-    raw = args[0] if args else "math.CT"
+    raw = args[0] if args else "cs.LG"
     categories = [name.strip() for name in raw.split(",") if name.strip()]
     if not categories:
-        categories = ["math.CT"]
+        categories = ["cs.LG"]
 
     try:
         max_results = int(args[1]) if len(args) > 1 else 20

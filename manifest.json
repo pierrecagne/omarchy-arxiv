@@ -1,36 +1,51 @@
 {
   "schemaVersion": 1,
-  "id": "pece.arxiv",
-  "name": "arXiv",
+  "id": "io.github.pierrecagne.arxiv",
+  "name": "arXiv Reader",
   "version": "1.0.0",
   "author": "Pierre Cagne",
   "license": "MIT",
-  "description": "The latest arXiv preprints, one tab per category, in the bar.",
+  "description": "The latest arXiv preprints of your categories in the bar, and AI reading reports on the ones you star, written for your own expertise.",
   "kinds": [
     "bar-widget"
   ],
   "entryPoints": {
-    "barWidget": "Panel.qml"
+    "barWidget": "ArxivPanel.qml"
   },
   "barWidget": {
-    "displayName": "arXiv",
-    "description": "Browse and open the latest preprints of a few arXiv categories.",
+    "displayName": "arXiv Reader",
+    "description": "Browse the newest preprints of a few arXiv categories; star papers to get reading reports from Claude Code, Codex or another AI.",
     "category": "Info",
+    "aliases": [
+      "arxiv",
+      "papers",
+      "preprints",
+      "research"
+    ],
     "allowMultiple": false,
     "defaultSection": "center",
     "defaults": {
-      "categories": "math.CT, cs.LO, cs.PL, math.LO, math.AT",
+      "categories": "cs.LG, cs.AI, cs.CL",
       "maxResults": 20,
       "refreshIntervalMin": 30,
-      "reportsDir": "~/Documents/arxiv-reports"
+      "reportsDir": "~/Documents/arxiv-reports",
+      "reader": "",
+      "reportStyle": "Auto",
+      "promptFile": "",
+      "engine": "Claude Code",
+      "model": "",
+      "customCommand": "",
+      "sandbox": true,
+      "extraReadDirs": "",
+      "readerPort": 8791
     },
     "schema": [
       {
         "key": "categories",
         "type": "string",
         "label": "arXiv categories",
-        "defaultValue": "math.CT, cs.LO, cs.PL, math.LO, math.AT",
-        "description": "Comma-separated category codes; each one gets a tab, e.g. math.CT, cs.LO."
+        "defaultValue": "cs.LG, cs.AI, cs.CL",
+        "description": "Comma-separated category codes; each one gets a tab, e.g. math.CT, cs.LO, hep-th."
       },
       {
         "key": "maxResults",
@@ -56,6 +71,83 @@
         "label": "Report folder",
         "defaultValue": "~/Documents/arxiv-reports",
         "description": "Where the Markdown reports for starred preprints are written."
+      },
+      {
+        "key": "reader",
+        "type": "string",
+        "label": "Who the reports are for",
+        "defaultValue": "",
+        "description": "Your expertise, as the report should assume it, e.g. \"a working mathematician in categorical logic and type theory\" or \"an ML engineer who builds retrieval systems\". Empty: a researcher in the paper's own field."
+      },
+      {
+        "key": "reportStyle",
+        "type": "enum",
+        "label": "Report style",
+        "options": [
+          "Auto",
+          "Theory",
+          "Empirical",
+          "Custom"
+        ],
+        "defaultValue": "Auto",
+        "description": "Theory: theorems, definitions and proof strategies. Empirical: claims, methods, evaluation and reproducibility. Auto adapts to the paper. Custom uses your own prompt file."
+      },
+      {
+        "key": "promptFile",
+        "type": "path",
+        "label": "Custom prompt file",
+        "defaultValue": "",
+        "description": "Markdown prompt used when the report style is Custom. Placeholders: {READER}, {SOURCE}, {SOURCE_NOTE}."
+      },
+      {
+        "key": "engine",
+        "type": "enum",
+        "label": "AI engine",
+        "options": [
+          "Claude Code",
+          "Codex",
+          "Custom command"
+        ],
+        "defaultValue": "Claude Code",
+        "description": "Claude Code and Codex read the paper's files themselves. A custom command gets the paper's text with the prompt on standard input and must print Markdown."
+      },
+      {
+        "key": "model",
+        "type": "string",
+        "label": "Model",
+        "defaultValue": "",
+        "description": "Passed to Claude Code (--model) or Codex (-m), e.g. \"opus\" or \"gpt-5\". Empty: the engine's default."
+      },
+      {
+        "key": "customCommand",
+        "type": "string",
+        "label": "Custom command",
+        "defaultValue": "",
+        "description": "Used when the engine is Custom command, e.g. \"llm -m gpt-4.1\" or \"ollama run qwen3\". Runs with your permissions; the sandbox does not apply to it."
+      },
+      {
+        "key": "sandbox",
+        "type": "boolean",
+        "label": "Sandbox the AI to the paper",
+        "defaultValue": true,
+        "description": "On: Claude Code and Codex can read only the paper's folder and the extra folders below. Off: they can read any file you can. They can never write files."
+      },
+      {
+        "key": "extraReadDirs",
+        "type": "string",
+        "label": "Extra folders the AI may read",
+        "defaultValue": "",
+        "description": "Comma-separated folders, e.g. your own notes or papers, so reports can relate the paper to your work. Read-only."
+      },
+      {
+        "key": "readerPort",
+        "type": "integer",
+        "label": "Report reader port",
+        "min": 1024,
+        "max": 65535,
+        "step": 1,
+        "defaultValue": 8791,
+        "description": "Local port of the report reader (127.0.0.1 only)."
       }
     ]
   }

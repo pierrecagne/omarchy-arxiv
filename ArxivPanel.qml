@@ -13,11 +13,11 @@ import "Tex.js" as Tex
 // is layout, cursor state, and the two ways out: abstract page and PDF.
 Panel {
   id: root
-  moduleName: "pece.arxiv"
-  ipcTarget: "arxiv"
+  moduleName: "io.github.pierrecagne.arxiv"
+  ipcTarget: "io.github.pierrecagne.arxiv"
   manageIpc: false
 
-  readonly property var categories: Model.parseCategories(setting("categories", setting("category", "math.CT, cs.LO, cs.PL, math.LO, math.AT")), ["math.CT"])
+  readonly property var categories: Model.parseCategories(setting("categories", "cs.LG, cs.AI, cs.CL"), ["cs.LG"])
   readonly property int maxResults: Model.clampInt(setting("maxResults", 20), 5, 50, 20)
   readonly property int refreshIntervalMin: Model.clampInt(setting("refreshIntervalMin", 30), 5, 720, 30)
 
@@ -26,7 +26,7 @@ Panel {
 
   // Bound to the first tab until the user picks another, which replaces the
   // binding — the usual QML "default now, choice later" idiom.
-  property string activeCategory: categories.length > 0 ? categories[0] : "math.CT"
+  property string activeCategory: categories.length > 0 ? categories[0] : "cs.LG"
 
   // { "math.CT": { entries, error }, … } — one entry per tab, rebuilt whole
   // from each payload, so a tab never shows another tab's papers.
@@ -43,8 +43,25 @@ Panel {
 
   // Two small state files beside the cache: the widget owns starred.json,
   // digest.py owns reports.json, so neither writes what the other reads.
-  readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/omarchy-arxiv"
+  readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/io.github.pierrecagne.arxiv"
   readonly property string reportsDir: String(setting("reportsDir", Quickshell.env("HOME") + "/Documents/arxiv-reports"))
+  readonly property int readerPort: Model.clampInt(setting("readerPort", 8791), 1024, 65535, 8791)
+
+  // Everything digest.py needs, in one argument: engine, sandbox, who the
+  // reports are for and in which style. It normalises the values itself.
+  function digestConfig() {
+    return JSON.stringify({
+      reportsDir: root.reportsDir,
+      reader: String(setting("reader", "")),
+      style: String(setting("reportStyle", "Auto")),
+      promptFile: String(setting("promptFile", "")),
+      engine: String(setting("engine", "Claude Code")),
+      model: String(setting("model", "")),
+      command: String(setting("customCommand", "")),
+      sandbox: setting("sandbox", true),
+      extraReadDirs: String(setting("extraReadDirs", ""))
+    })
+  }
   readonly property string digestPath: String(Qt.resolvedUrl("digest.py")).replace(/^file:\/\//, "")
   readonly property string servePath: String(Qt.resolvedUrl("serve.py")).replace(/^file:\/\//, "")
   property var starred: ({})
@@ -163,6 +180,17 @@ Panel {
     Qt.callLater(function() { keyCatcher.forceActiveFocus() })
   }
 
+  // Star by identifier without the editor, for keybindings and scripts.
+  function starById(text) {
+    var id = Model.parseArxivId(text)
+    if (id === "") return "not an arXiv identifier"
+    if (starred[id] !== undefined) return "already starred"
+    if (lookupProcess.running) return "busy"
+    lookupProcess.command = ["python3", root.helperPath, "--id", id]
+    lookupProcess.running = true
+    return "looking up " + id
+  }
+
   function submitAdding() {
     var id = Model.parseArxivId(addField.text)
     if (id === "") {
@@ -195,7 +223,7 @@ Panel {
   // report for and runs it through claude. It notifies as it goes, and holds
   // its own lock, so a second press while it works is harmless.
   function runDigest() {
-    Quickshell.execDetached(["python3", root.digestPath, root.reportsDir])
+    Quickshell.execDetached(["python3", root.digestPath, "--config", root.digestConfig()])
     actionStatus = starredCount === 0 ? "Nothing starred" : "Summarising in the background…"
     statusTimer.restart()
   }
@@ -203,7 +231,7 @@ Panel {
   // Starts the local reader if it is not already up, then opens the browser
   // at it. serve.py is a no-op beyond opening the tab when its port is taken.
   function openReports() {
-    Quickshell.execDetached(["python3", root.servePath, root.reportsDir])
+    Quickshell.execDetached(["python3", root.servePath, root.reportsDir, "--port=" + root.readerPort])
     actionStatus = "Opening the reports…"
     statusTimer.restart()
   }
@@ -399,6 +427,9 @@ Panel {
     function hide(): void { root.close() }
     function toggle(): void { root.toggle() }
     function refresh(): string { root.refresh(true); return "ok" }
+    function summarise(): string { root.runDigest(); return "ok" }
+    function reports(): string { root.openReports(); return "ok" }
+    function star(id: string): string { return root.starById(id) }
     function category(name: string): string {
       if (root.tabValues.indexOf(name) === -1) return "unknown"
       root.setActiveCategory(name)
