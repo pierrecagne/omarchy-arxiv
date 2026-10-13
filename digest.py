@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Turn starred arXiv preprints into Markdown reading reports.
 
-Usage: digest.py [--config JSON] [reports-dir]
+Usage: digest.py [--config -] [--background] [reports-dir]
 
 Reads the widget's starred.json, skips anything already reported, and for each
 remaining paper downloads its LaTeX source (or the PDF) and hands it to an AI
 engine together with a report prompt. One report per preprint; reports.json
 records what is done so a re-run with the same stars is a no-op.
 
-The widget passes its settings as one JSON object (see DEFAULTS). Engines:
+The widget passes its settings as one line of JSON on standard input
+(--config -, see DEFAULTS), never on the command line: any account can read
+that in /proc, and the settings describe the reader. With --background the
+script detaches once it has them, so the run outlives the widget. Engines:
 
   claude   Claude Code (`claude -p`), reading the paper with its file tools.
   codex    Codex (`codex exec`), reading the paper with shell commands.
@@ -88,10 +91,13 @@ class EngineError(RuntimeError):
 
 def log(message):
     """Nothing watches this script's stdout - the shell launches it detached -
-    so the trail of a run has to live in a file."""
+    so the trail of a run has to live in a file. It records the settings, so
+    only the user can read it."""
     try:
         os.makedirs(STATE_DIR, exist_ok=True)
-        with open(LOG, "a") as handle:
+        fd = os.open(LOG, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "a") as handle:
             handle.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S ") + str(message) + "\n")
     except OSError:
         pass
@@ -162,14 +168,17 @@ def split_dirs(value):
 
 def parse_config(argv):
     config = dict(DEFAULTS)
-    args = list(argv[1:])
+    args = [a for a in argv[1:] if a != "--background"]
     if "--config" in args:
         index = args.index("--config")
-        try:
-            config.update(json.loads(args[index + 1]))
-        except (IndexError, ValueError) as error:
-            log("bad --config, using defaults: " + str(error))
+        source = args[index + 1] if index + 1 < len(args) else ""
         del args[index:index + 2]
+        try:
+            if source != "-":
+                raise ValueError("the settings come on stdin: --config -")
+            config.update(json.loads(sys.stdin.readline()))
+        except (ValueError, TypeError) as error:
+            log("bad --config, using defaults: " + str(error))
     if args:
         config["reportsDir"] = args[0]
 
@@ -561,8 +570,22 @@ def process(paper, config, workdir):
     return report_path
 
 
+def detach():
+    """Carry on in a session of our own, with no tie to the widget's Process,
+    which kills its child when the bar reloads."""
+    if os.fork() > 0:
+        os._exit(0)
+    os.setsid()
+    devnull = os.open(os.devnull, os.O_RDWR)
+    for fd in (0, 1, 2):
+        os.dup2(devnull, fd)
+    os.close(devnull)
+
+
 def main(argv):
     config = parse_config(argv)
+    if "--background" in argv:
+        detach()
     reports_dir = config["reportsDir"]
     os.makedirs(STATE_DIR, exist_ok=True)
     log("settings: engine=%s model=%s sandbox=%s style=%s reader=%r extra=%s reports=%s"

@@ -47,8 +47,8 @@ Panel {
   readonly property string reportsDir: String(setting("reportsDir", Quickshell.env("HOME") + "/Documents/arxiv-reports"))
   readonly property int viewerPort: Model.clampInt(setting("viewerPort", 8791), 1024, 65535, 8791)
 
-  // Everything digest.py needs, in one argument: engine, sandbox, who the
-  // reports are for and in which style. It normalises the values itself.
+  // Everything digest.py needs, as one line of JSON: engine, sandbox, who
+  // the reports are for and in which style. It normalises the values itself.
   function digestConfig() {
     return JSON.stringify({
       reportsDir: root.reportsDir,
@@ -233,7 +233,7 @@ Panel {
   // report for and runs it through claude. It notifies as it goes, and holds
   // its own lock, so a second press while it works is harmless.
   function runDigest() {
-    Quickshell.execDetached(["python3", root.digestPath, "--config", root.digestConfig()])
+    if (!digestProcess.running) digestProcess.running = true
     actionStatus = starredCount === 0 ? "Nothing starred" : "Summarising in the background…"
     statusTimer.restart()
   }
@@ -354,6 +354,16 @@ Panel {
     onLoaded: root.reports = Model.parseReports(text())
     onLoadFailed: root.reports = ({})
     onFileChanged: reload()
+  }
+
+  // The settings go on stdin, not the command line, which any account can
+  // read in /proc. digest.py detaches once it has them, since this Process
+  // would kill it when the bar reloads.
+  Process {
+    id: digestProcess
+    command: ["python3", root.digestPath, "--config", "-", "--background"]
+    stdinEnabled: true
+    onStarted: write(root.digestConfig() + "\n")
   }
 
   Process {

@@ -105,6 +105,8 @@ omarchy-shell io.github.pierrecagne.arxiv reports
 - The viewer's addresses start with a secret drawn each time it starts, and
   handed to your browser through a file only you can read, so other accounts
   on the computer cannot read your reports through it.
+- Your settings, including who the reports are for, reach `digest.py` on
+  standard input rather than its command line, which other accounts can read.
 - A custom command runs with your permissions: the sandbox setting does not
   apply to it.
 
