@@ -133,6 +133,20 @@ def write_private(path, text):
         raise
 
 
+def tighten_reports():
+    """Make every report on record the user's alone. Versions before reports
+    were written private left them at the umask's 0644, and nothing else
+    would ever revisit them. Only files the plugin recorded are touched, and
+    never through a symlink."""
+    for entry in (load(REPORTS, {}).get("reports") or {}).values():
+        path = entry.get("path", "") if isinstance(entry, dict) else ""
+        try:
+            if path and os.path.isfile(path) and not os.path.islink(path):
+                os.chmod(path, 0o600)
+        except OSError:
+            pass
+
+
 def save(path, payload):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + ".tmp"
@@ -616,6 +630,7 @@ def main(argv):
         notify("A summary run is already going.")
         return 0
 
+    tighten_reports()
     binary = engine_binary(config)
     if not binary or shutil.which(binary) is None:
         notify("The " + (binary or "engine") + " command is not on PATH, so no report "

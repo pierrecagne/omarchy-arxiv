@@ -37,6 +37,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import digest
+
 APP_ID = "io.github.pierrecagne.arxiv"
 STATE_DIR = os.path.join(
     os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), APP_ID)
@@ -433,6 +435,10 @@ def main(argv):
         if flag.startswith("--port="):
             port = int(flag.split("=", 1)[1])
     url = "http://127.0.0.1:%d/" % port
+
+    # Opening the viewer is the other moment reports from before they were
+    # made private get fixed, for anyone who never runs a summary again.
+    digest.tighten_reports()
 
     if "--vendor" in flags:
         vendor()
