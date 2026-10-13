@@ -102,6 +102,9 @@ omarchy-shell io.github.pierrecagne.arxiv reports
   material rather than instructions, and the local report viewer (bound to
   `127.0.0.1`) shows raw HTML as text and blocks scripts, outside images and
   network requests.
+- The viewer's addresses start with a secret drawn each time it starts, and
+  handed to your browser through a file only you can read, so other accounts
+  on the computer cannot read your reports through it.
 - A custom command runs with your permissions: the sandbox setting does not
   apply to it.
 

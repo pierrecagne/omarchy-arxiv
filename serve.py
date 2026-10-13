@@ -4,9 +4,13 @@
 Usage: serve.py [reports-dir] [--port=N] [--no-open] [--vendor]
 
 Binds to localhost only, and answers only requests addressed to it by that
-name (a DNS-rebinding page cannot read the reports). KaTeX and marked are
-vendored into the state directory on first run, so reading works offline
-afterwards; if that download fails the pages fall back to a CDN.
+name (a DNS-rebinding page cannot read the reports). Loopback still lets in
+every account on this machine, so each run also draws a secret that every
+page's path must start with. It is handed to the browser through a page in
+the runtime directory that only this user can read, never on a command line,
+where any account could see it in /proc. KaTeX and marked are vendored into
+the state directory on first run, so reading works offline afterwards; if
+that download fails the pages fall back to a CDN.
 
 Reports are written by a language model from untrusted papers, so they are
 rendered defensively: raw HTML in the Markdown is shown as text, and a
@@ -15,6 +19,8 @@ images and no network requests.
 """
 
 import datetime
+import hashlib
+import hmac
 import html as html_mod
 import http.server
 import json
@@ -25,6 +31,7 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import urllib.error
 import urllib.parse
@@ -34,6 +41,9 @@ APP_ID = "io.github.pierrecagne.arxiv"
 STATE_DIR = os.path.join(
     os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), APP_ID)
 ASSET_DIR = os.path.join(STATE_DIR, "web")
+# Private to this user, and emptied at logout, when the viewer stops too.
+RUNTIME_DIR = (os.path.join(os.environ["XDG_RUNTIME_DIR"], APP_ID)
+               if os.environ.get("XDG_RUNTIME_DIR") else os.path.join(STATE_DIR, "viewer"))
 DEFAULT_REPORTS_DIR = os.path.expanduser("~/Documents/arxiv-reports")
 DEFAULT_PORT = 8791
 
@@ -159,6 +169,42 @@ RENDER_JS = r"""
 """
 
 
+# Opened from a file only this user can read, it takes the browser to the
+# viewer with the run's secret.
+OPENER = """<!doctype html>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="0;url=__URL__">
+<title>arXiv reports</title>
+<p><a href="__URL__">Open the arXiv reports</a></p>
+"""
+
+EXPIRED = ("<h1>arXiv reports</h1><p class=meta>This address is out of date. "
+           "Open the reports from the arXiv widget in the bar (<code>v</code>).</p>")
+
+
+def record_path(port):
+    return os.path.join(RUNTIME_DIR, "viewer-%d.json" % port)
+
+
+def opener_path(port):
+    return os.path.join(RUNTIME_DIR, "viewer-%d.html" % port)
+
+
+def write_private(path, text):
+    """Replace path with text, readable by this user only."""
+    os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+    os.chmod(os.path.dirname(path), 0o700)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path))  # created 0600
+    with os.fdopen(fd, "w") as handle:
+        handle.write(text)
+    os.replace(tmp, path)
+
+
+def proof(token, nonce):
+    """What a viewer answers to show it holds token, without revealing it."""
+    return hmac.new(token.encode(), nonce.encode(), hashlib.sha256).hexdigest()
+
+
 def page(title, body, styles):
     return (PAGE.replace("__TITLE__", html_mod.escape(title))
                 .replace("__STYLES__", styles)
@@ -179,17 +225,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
     reports_dir = DEFAULT_REPORTS_DIR
     local_assets = False
     port = DEFAULT_PORT
+    token = ""  # this run's secret, the first segment of every page's path
 
     def log_message(self, *args):
         pass  # launched detached by the widget; nothing reads its output
 
+    def base(self):
+        return "/%s/" % self.token
+
     def styles(self):
-        href = "/assets/katex.min.css" if self.local_assets else KATEX + "katex.min.css"
+        href = self.base() + "assets/katex.min.css" if self.local_assets else KATEX + "katex.min.css"
         return '<link rel="stylesheet" href="%s">' % href
 
     def scripts(self):
-        base = "/assets/" if self.local_assets else KATEX
-        marked = "/assets/marked.min.js" if self.local_assets else CDN + "/marked@12.0.2/marked.min.js"
+        base = self.base() + "assets/" if self.local_assets else KATEX
+        marked = base + "marked.min.js" if self.local_assets else CDN + "/marked@12.0.2/marked.min.js"
         auto = base + ("auto-render.min.js" if self.local_assets else "contrib/auto-render.min.js")
         return ('<script src="%skatex.min.js"></script>'
                 '<script src="%s"></script>'
@@ -213,6 +263,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
+    def send_json(self, value):
+        payload = json.dumps(value).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
     def host_ok(self):
         host = (self.headers.get("Host") or "").strip().lower()
         return host in ("127.0.0.1:%d" % self.port, "localhost:%d" % self.port)
@@ -222,23 +280,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_response(403)
             self.end_headers()
             return
-        path = self.path.split("?")[0]
+        path, _, query = self.path.partition("?")
         if path == "/__id":
-            payload = json.dumps({"app": APP_ID, "reportsDir": self.reports_dir,
-                                  "pid": os.getpid()}).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(payload)))
-            self.end_headers()
-            self.wfile.write(payload)
-            return
-        if path == "/":
+            nonce = urllib.parse.parse_qs(query).get("nonce", [""])[0]
+            return self.send_json({"app": APP_ID, "proof": proof(self.token, nonce)})
+
+        # Loopback keeps out other machines; the secret keeps out the other
+        # accounts on this one.
+        secret, _, rest = path.partition("/")[2].partition("/")
+        if not (self.token and hmac.compare_digest(secret.encode(), self.token.encode())):
+            return self.send_html(page("arXiv reports", EXPIRED, ""), 403)
+        if rest == "":
             return self.send_html(self.index_page())
-        if path.startswith("/report/"):
-            return self.report_page(path[len("/report/"):])
-        if path.startswith("/assets/"):
-            return self.asset(path[len("/assets/"):])
-        self.send_html("<p>Not found. <a href='/'>Reports</a></p>", 404)
+        if rest.startswith("report/"):
+            return self.report_page(rest[len("report/"):])
+        if rest.startswith("assets/"):
+            return self.asset(rest[len("assets/"):])
+        self.send_html("<p>Not found. <a href='%s'>Reports</a></p>" % self.base(), 404)
 
     def rows(self):
         try:
@@ -263,9 +321,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         items = []
         for mtime, name, title in rows:
             when = datetime.datetime.fromtimestamp(mtime).strftime("%d %b %Y, %H:%M")
-            items.append('<li class=report><a href="/report/%s">%s</a><br>'
+            items.append('<li class=report><a href="%sreport/%s">%s</a><br>'
                          '<span class=when>%s</span></li>'
-                         % (urllib.parse.quote(name), html_mod.escape(title), when))
+                         % (self.base(), urllib.parse.quote(name), html_mod.escape(title), when))
         return page("arXiv reports",
                     "<h1>arXiv reports</h1><ul class=reports>%s</ul>" % "".join(items),
                     self.styles())
@@ -278,14 +336,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         full = os.path.join(self.reports_dir, name)
         if not os.path.isfile(full):
-            return self.send_html("<p>Not found. <a href='/'>Reports</a></p>", 404)
+            return self.send_html("<p>Not found. <a href='%s'>Reports</a></p>" % self.base(), 404)
 
         markdown = open(full, errors="replace").read()
         nonce = secrets.token_urlsafe(16)
-        body = ('<a class=home href="/">&larr; all reports</a>'
+        body = ('<a class=home href="%s">&larr; all reports</a>'
                 '<div id=out></div>'
                 '<script id=src type="text/plain">%s</script>%s<script nonce="%s">%s</script>'
-                % (html_mod.escape(markdown), self.scripts(), nonce, RENDER_JS))
+                % (self.base(), html_mod.escape(markdown), self.scripts(), nonce, RENDER_JS))
         return self.send_html(page(report_title(full), body, self.styles()), nonce=nonce)
 
     def asset(self, name):
@@ -321,14 +379,29 @@ def notify(message):
 
 
 def running_viewer(port):
-    """What already listens on the port: our viewer (and for which folder), or
-    something else entirely (None)."""
+    """What already listens on the port: our viewer, as the record it wrote on
+    starting describes it (folder, pid), or None for anything that cannot
+    prove it holds that record's secret. The secret itself is never sent, so
+    another account squatting the port learns nothing from the question."""
     try:
-        with urllib.request.urlopen("http://127.0.0.1:%d/__id" % port, timeout=3) as response:
-            info = json.loads(response.read())
-        return info if info.get("app") == APP_ID else None
-    except (OSError, ValueError, urllib.error.URLError):
-        return None
+        record = json.load(open(record_path(port)))
+        nonce = secrets.token_urlsafe(16)
+        with urllib.request.urlopen("http://127.0.0.1:%d/__id?nonce=%s" % (port, nonce),
+                                    timeout=3) as response:
+            answer = json.loads(response.read())
+        expected = proof(record["token"], nonce)
+        if hmac.compare_digest(str(answer.get("proof", "")).encode(), expected.encode()):
+            return record
+    except (OSError, ValueError, KeyError, AttributeError, urllib.error.URLError):
+        pass
+    return None
+
+
+def open_browser(port):
+    # The page to open holds the secret, which a URL argument would show to
+    # every account through /proc; its own path gives nothing away.
+    subprocess.run(["omarchy-launch-browser", "file://" + urllib.parse.quote(opener_path(port))],
+                   check=False)
 
 
 def stop_viewer(pid):
@@ -378,7 +451,7 @@ def main(argv):
         same = os.path.realpath(info.get("reportsDir", "")) == os.path.realpath(reports_dir)
         if same or not stop_viewer(int(info.get("pid", 0))):
             if "--no-open" not in flags:
-                subprocess.run(["omarchy-launch-browser", url], check=False)
+                open_browser(port)
             return 0
 
     if not have_assets():
@@ -392,10 +465,15 @@ def main(argv):
     Handler.port = port
 
     server = http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    # Only once the port is ours does a new secret go out, to files this user
+    # alone can read: the record later runs check against, and the opener.
+    Handler.token = secrets.token_urlsafe(32)
+    write_private(record_path(port), json.dumps({
+        "app": APP_ID, "pid": os.getpid(), "reportsDir": reports_dir, "token": Handler.token}))
+    write_private(opener_path(port), OPENER.replace("__URL__", url + Handler.token + "/"))
     if "--no-open" not in flags:
-        threading.Timer(0.4, lambda: subprocess.run(
-            ["omarchy-launch-browser", url], check=False)).start()
-    print("serving " + reports_dir + " on " + url)
+        threading.Timer(0.4, lambda: open_browser(port)).start()
+    print("serving " + reports_dir + " on " + url + "; open file://" + opener_path(port))
     server.serve_forever()
     return 0
 

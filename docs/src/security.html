@@ -36,6 +36,7 @@ else is sent anywhere: no analytics, no accounts.</p>
   <tr><th>Path</th><th>Contents</th></tr>
   <tr><td><code>~/.local/state/io.github.pierrecagne.arxiv/</code></td><td><code>starred.json</code>, <code>reports.json</code>, <code>digest.log</code>, the viewer's assets (<code>web/</code>) and the scratch folder for papers being summarised (<code>work/</code>)</td></tr>
   <tr><td><code>~/.cache/io.github.pierrecagne.arxiv/</code></td><td>The cached listings</td></tr>
+  <tr><td><code>$XDG_RUNTIME_DIR/io.github.pierrecagne.arxiv/</code></td><td>The running viewer's secret, and the page that opens it in your browser; readable by you only, and cleared when you log out</td></tr>
   <tr><td>Your reports folder</td><td>One Markdown file per report</td></tr>
 </table></div>
 <p>The plugin writes nowhere else, and never changes your configuration
@@ -66,6 +67,13 @@ treats them as untrusted too:</p>
   <li>It listens on <code>127.0.0.1</code> only, and answers only requests
   addressed to <code>127.0.0.1</code> or <code>localhost</code> on its port,
   which defeats DNS-rebinding pages.</li>
+  <li>Every address it serves starts with a secret drawn afresh each time it
+  starts, so the other accounts on your computer, which can reach
+  <code>127.0.0.1</code> too, cannot read your reports through it. The
+  secret reaches your browser through a page in your runtime folder that only
+  you can read, never on a command line, where any account could see it.
+  When <kbd>v</kbd> finds the viewer already running, it asks the program on
+  the port to prove it holds the secret, without sending it.</li>
   <li>Raw HTML in a report is shown as text. Links keep only
   <code>http</code>, <code>https</code>, <code>mailto</code> and in-page
   targets, and images are replaced by their description.</li>
