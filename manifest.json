@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "pece.arxiv",
+  "name": "arXiv",
+  "version": "1.0.0",
+  "author": "Pierre Cagne",
+  "license": "MIT",
+  "description": "The latest arXiv preprints, one tab per category, in the bar.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "arXiv",
+    "description": "Browse and open the latest preprints of a few arXiv categories.",
+    "category": "Info",
+    "allowMultiple": false,
+    "defaultSection": "center",
+    "defaults": {
+      "categories": "math.CT, cs.LO, cs.PL, math.LO, math.AT",
+      "maxResults": 20,
+      "refreshIntervalMin": 30,
+      "reportsDir": "~/Documents/arxiv-reports"
+    },
+    "schema": [
+      {
+        "key": "categories",
+        "type": "string",
+        "label": "arXiv categories",
+        "defaultValue": "math.CT, cs.LO, cs.PL, math.LO, math.AT",
+        "description": "Comma-separated category codes; each one gets a tab, e.g. math.CT, cs.LO."
+      },
+      {
+        "key": "maxResults",
+        "type": "integer",
+        "label": "Preprints to list",
+        "min": 5,
+        "max": 50,
+        "step": 5,
+        "defaultValue": 20
+      },
+      {
+        "key": "refreshIntervalMin",
+        "type": "integer",
+        "label": "Refresh interval (minutes)",
+        "min": 5,
+        "max": 720,
+        "step": 5,
+        "defaultValue": 30
+      },
+      {
+        "key": "reportsDir",
+        "type": "path",
+        "label": "Report folder",
+        "defaultValue": "~/Documents/arxiv-reports",
+        "description": "Where the Markdown reports for starred preprints are written."
+      }
+    ]
+  }
+}
