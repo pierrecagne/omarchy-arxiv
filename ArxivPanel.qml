@@ -105,8 +105,18 @@ Panel {
   // refresh (button, `r`, right-click, IPC) forces past that cache.
   readonly property int cacheSeconds: Math.max(60, refreshIntervalMin * 60 - 60)
 
+  // A refresh asked for while a fetch runs is queued, not dropped: at shell
+  // start the first fetch goes out with the default categories, before the
+  // user's settings arrive, and the settings change must still be fetched.
+  property bool refreshQueued: false
+  property bool refreshQueuedForce: false
+
   function refresh(force) {
-    if (fetchProcess.running) return
+    if (fetchProcess.running) {
+      refreshQueued = true
+      refreshQueuedForce = refreshQueuedForce || force === true
+      return
+    }
     var command = ["python3", root.helperPath, categories.join(","), String(root.maxResults), String(root.cacheSeconds)]
     if (force === true) command.push("--force")
     fetchProcess.command = command
@@ -371,22 +381,32 @@ Panel {
     stdout: StdioCollector { id: fetchOut; waitForEnd: true }
     stderr: StdioCollector { id: fetchErr; waitForEnd: true }
     onExited: function(exitCode) {
-      if (exitCode !== 0) {
-        root.fetchError = Model.elide(String(fetchErr.text || "arXiv fetch failed"), 140)
-        return
+      root.applyFetch(exitCode)
+      if (root.refreshQueued) {
+        var force = root.refreshQueuedForce
+        root.refreshQueued = false
+        root.refreshQueuedForce = false
+        Qt.callLater(function() { root.refresh(force) })
       }
-
-      var parsed = Model.parsePayload(String(fetchOut.text || ""))
-      if (!parsed.ok) {
-        root.fetchError = "Could not read the arXiv response"
-        return
-      }
-
-      root.fetchError = ""
-      root.feeds = parsed.feeds
-      if (root.cursorIndex >= root.entries.length) root.cursorIndex = Math.max(0, root.entries.length - 1)
-      root.scheduleRetry(Model.anyFeedError(parsed.feeds))
     }
+  }
+
+  function applyFetch(exitCode) {
+    if (exitCode !== 0) {
+      fetchError = Model.elide(String(fetchErr.text || "arXiv fetch failed"), 140)
+      return
+    }
+
+    var parsed = Model.parsePayload(String(fetchOut.text || ""))
+    if (!parsed.ok) {
+      fetchError = "Could not read the arXiv response"
+      return
+    }
+
+    fetchError = ""
+    feeds = parsed.feeds
+    if (cursorIndex >= entries.length) cursorIndex = Math.max(0, entries.length - 1)
+    scheduleRetry(Model.anyFeedError(parsed.feeds))
   }
 
   // arXiv's API sheds load with HTTP 429 for hours at a time. While any tab
