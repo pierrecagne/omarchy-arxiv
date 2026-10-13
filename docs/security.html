@@ -63,7 +63,7 @@ else is sent anywhere: no analytics, no accounts.</p>
   <tr><td><code>~/.local/state/io.github.pierrecagne.arxiv/</code></td><td><code>starred.json</code>, <code>reports.json</code>, <code>digest.log</code>, the viewer's assets (<code>web/</code>) and the scratch folder for papers being summarised (<code>work/</code>)</td></tr>
   <tr><td><code>~/.cache/io.github.pierrecagne.arxiv/</code></td><td>The cached listings</td></tr>
   <tr><td><code>$XDG_RUNTIME_DIR/io.github.pierrecagne.arxiv/</code></td><td>The running viewer's secret, and the page that opens it in your browser; readable by you only, and cleared when you log out</td></tr>
-  <tr><td>Your reports folder</td><td>One Markdown file per report</td></tr>
+  <tr><td>Your reports folder</td><td>One Markdown file per report, readable by you only</td></tr>
 </table></div>
 <p>The plugin writes nowhere else, and never changes your configuration
 beyond what Omarchy itself stores for the widget.</p>
@@ -72,7 +72,10 @@ beyond what Omarchy itself stores for the widget.</p>
 <p>Any account can list the command lines of your programs, so nothing
 personal goes on one. Your settings, including who the reports are for,
 reach <code>digest.py</code> on its standard input, and
-<code>digest.log</code>, which records them, is readable by you only. What
+<code>digest.log</code>, which records them, is readable by you only. So
+are the reports, which can quote your own notes, and the scratch folder they
+are written in. A reports folder the plugin creates is yours only too; one
+you chose keeps the permissions you gave it. What
 command lines still show is your arXiv categories, the identifiers and links
 of papers you look up or open, folder paths, the model name, notification
 text and a custom command itself. The report viewer has its own protection,

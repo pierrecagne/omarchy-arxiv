@@ -36,6 +36,7 @@ import os
 import shlex
 import shutil
 import tarfile
+import tempfile
 import re
 import subprocess
 import sys
@@ -117,6 +118,19 @@ def load(path, default):
             return json.load(handle)
     except (OSError, ValueError):
         return default
+
+
+def write_private(path, text):
+    """Replace path with text, readable by the user only. Always a new file,
+    so a report written over an older one does not keep its permissions."""
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".", suffix=".tmp")  # 0600
+    try:
+        with os.fdopen(fd, "w") as handle:
+            handle.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        os.unlink(tmp)
+        raise
 
 
 def save(path, payload):
@@ -561,11 +575,12 @@ def process(paper, config, workdir):
     pages = page_count(os.path.join(srcdir, entry_name)) if kind == "pdf" else 0
     body = summarise(config, kind, entry_name, srcdir)
 
+    # A report can quote the user's own notes, so it is theirs alone, and so
+    # is a folder made for it. A folder they chose keeps the mode they gave it.
     reports_dir = config["reportsDir"]
-    os.makedirs(reports_dir, exist_ok=True)
+    os.makedirs(reports_dir, mode=0o700, exist_ok=True)
     report_path = os.path.join(reports_dir, safe_id(paper_id) + "-" + slug(paper.get("title")) + ".md")
-    with open(report_path, "w") as handle:
-        handle.write(header(paper, pages, kind, config) + body + "\n")
+    write_private(report_path, header(paper, pages, kind, config) + body + "\n")
     shutil.rmtree(srcdir, ignore_errors=True)
     return report_path
 
@@ -627,10 +642,12 @@ def main(argv):
            + " with " + label + "…")
 
     # Start from a clean scratch dir: a run killed mid-paper leaves sources
-    # behind, and the lock means nothing else is using it.
+    # behind, and the lock means nothing else is using it. Private, since
+    # Codex leaves its report in it.
     workdir = os.path.join(STATE_DIR, "work")
     shutil.rmtree(workdir, ignore_errors=True)
-    os.makedirs(workdir, exist_ok=True)
+    os.makedirs(workdir, mode=0o700, exist_ok=True)
+    os.chmod(workdir, 0o700)
 
     done, failed = 0, []
     for index, paper in enumerate(pending):
