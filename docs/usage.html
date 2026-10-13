@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Using it · arXiv Reader for Omarchy</title>
+<meta name="description" content="Browsing, starring, summarising and reading reports; keys and scripting.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="site-inner">
+    <div class="brand"><a href="index.html">arXiv Reader</a><span>an Omarchy plugin</span></div>
+    <nav class="site" aria-label="Documentation">
+      <a href="index.html">Overview</a>
+      <a href="install.html">Install</a>
+      <a href="usage.html" aria-current="page">Using it</a>
+      <a href="configuration.html">Configuration</a>
+      <a href="engines.html">AI engines &amp; sandbox</a>
+      <a href="security.html">Privacy &amp; security</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+      <a href="https://github.com/pierrecagne/omarchy-arxiv">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+<h1>Using it</h1>
+
+<h2>The bar icon</h2>
+<p>Click the arXiv icon to open or close the panel; right-click it to refresh
+the lists. Hovering shows the current tab, how many preprints it lists and
+how recent the newest one is.</p>
+
+<h2>The panel</h2>
+<p>Each category you follow has a tab, plus a ★ tab for starred papers. A row
+shows the title, the authors, and a line with the submission age, the
+category (marked <em>cross-list</em> when the paper belongs primarily to
+another one), the identifier, and <em>report</em> once a report exists.
+Select a row to show its abstract and the authors' comment.</p>
+
+<h3>Keys</h3>
+<div class="table-wrap"><table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Move between papers</td></tr>
+  <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next tab</td></tr>
+  <tr><td><kbd>Enter</kbd></td><td>Show or hide the abstract</td></tr>
+  <tr><td><kbd>s</kbd></td><td>Star or unstar the paper</td></tr>
+  <tr><td><kbd>a</kbd></td><td>Star a paper by its identifier or link</td></tr>
+  <tr><td><kbd>S</kbd></td><td>Write reports for the starred papers that have none</td></tr>
+  <tr><td><kbd>v</kbd></td><td>Open the reports in the browser</td></tr>
+  <tr><td><kbd>o</kbd> / <kbd>p</kbd></td><td>Open the arXiv page / the PDF</td></tr>
+  <tr><td><kbd>r</kbd></td><td>Refresh all tabs</td></tr>
+  <tr><td><kbd>Tab</kbd></td><td>Move to the next bar panel</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Close</td></tr>
+</table></div>
+<p>With the mouse: click a row for its abstract, right-click it for the PDF,
+or use the star, page and PDF buttons on its right.</p>
+
+<h3>Starring any paper</h3>
+<p>Press <kbd>a</kbd> and paste an identifier in any of these forms, with or
+without a version: <code>2401.12345</code>, <code>arXiv:2401.12345v2</code>,
+<code>math/0309285</code>, or an <code>arxiv.org/abs/…</code> or
+<code>arxiv.org/pdf/…</code> link. The paper is looked up and lands in the
+★ tab.</p>
+
+<h2>Reports</h2>
+<p>Pressing <kbd>S</kbd> starts a background run over the starred papers that
+have no report yet. For each one it:</p>
+<ol>
+  <li>downloads the LaTeX source from arXiv, keeping only text files
+  (<code>.tex</code>, <code>.bbl</code>, <code>.bib</code>, <code>.sty</code>,
+  <code>.cls</code>), or the PDF when the paper has no source;</li>
+  <li>runs your <a href="engines.html">AI engine</a> on it with the report
+  prompt, in the <a href="engines.html#sandbox">sandbox</a> unless you turned
+  it off;</li>
+  <li>writes <code>&lt;identifier&gt;-&lt;title&gt;.md</code> to your reports
+  folder, headed by the title, authors, link, and a line saying when and by
+  which engine and model it was generated.</li>
+</ol>
+<p>Notifications tell you when the run starts and how it ended. Only one run
+goes at a time, and every finished report is recorded immediately, so an
+interrupted run keeps what it did. To regenerate a report, delete its
+Markdown file and press <kbd>S</kbd> again.</p>
+<p>A short paper takes a minute or two; a long one longer, and it uses more
+of your AI plan.</p>
+
+<h2>Reading</h2>
+<p>Press <kbd>v</kbd> to open the local report reader, a small web server on
+<code>127.0.0.1</code> (port 8791 by default) that lists your reports, newest
+first, and renders each one with its mathematics typeset by KaTeX. The first
+time, it downloads KaTeX and marked once; after that it works offline.</p>
+<p>The reports are plain Markdown with LaTeX mathematics, so they also read
+well in any Markdown editor, Obsidian, or a notes repository.</p>
+
+<h2>Refreshing</h2>
+<p>The lists refresh every 30 minutes (configurable). The bar may hold
+several copies of the widget, one per monitor; they share one fetch through a
+disk cache, so arXiv sees one request per category. When arXiv rate-limits
+its API (HTTP 429), which it sometimes does for hours, each tab keeps its last
+list with a warning, and the plugin retries after 2 minutes, then 4, and so
+on up to the refresh interval.</p>
+
+<h2 id="scripting">Scripting and keybindings</h2>
+<p>The widget answers <code>omarchy-shell io.github.pierrecagne.arxiv &lt;command&gt;</code>:</p>
+<div class="table-wrap"><table>
+  <tr><th>Command</th><th>Effect</th></tr>
+  <tr><td><code>toggle</code>, <code>open</code>, <code>close</code></td><td>Show or hide the panel</td></tr>
+  <tr><td><code>refresh</code></td><td>Refetch every tab</td></tr>
+  <tr><td><code>category &lt;code&gt;</code></td><td>Switch tab, e.g. <code>category math.CT</code> or <code>category starred</code></td></tr>
+  <tr><td><code>star &lt;identifier&gt;</code></td><td>Look a paper up and star it</td></tr>
+  <tr><td><code>summarise</code></td><td>Write the missing reports</td></tr>
+  <tr><td><code>reports</code></td><td>Open the report reader</td></tr>
+</table></div>
+<p>For example, in <code>~/.config/hypr/bindings.lua</code>:</p>
+<pre><code>o.bind("SUPER + ALT + A", "arXiv", "omarchy-shell io.github.pierrecagne.arxiv toggle")</code></pre>
+<div class="pager"><a href="install.html">&larr; Install</a><a href="configuration.html">Configuration &rarr;</a></div>
+</main>
+<footer class="site">
+  <div class="site-inner">
+    <p>This plugin was vibe coded with Claude Opus 5.5. Read and check the code
+    yourself before using it: like every Omarchy plugin it runs unsandboxed
+    inside <code>omarchy-shell</code> with your permissions.</p>
+    <p>Thank you to arXiv for use of its open access interoperability. This
+    project is not affiliated with or endorsed by arXiv, Anthropic or OpenAI.</p>
+    <p><a href="https://github.com/pierrecagne/omarchy-arxiv">Source on GitHub</a> · MIT License · by Pierre Cagne</p>
+  </div>
+</footer>
+</body>
+</html>

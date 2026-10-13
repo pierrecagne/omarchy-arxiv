@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install · arXiv Reader for Omarchy</title>
+<meta name="description" content="Requirements, installing the plugin and setting up an AI engine.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="site-inner">
+    <div class="brand"><a href="index.html">arXiv Reader</a><span>an Omarchy plugin</span></div>
+    <nav class="site" aria-label="Documentation">
+      <a href="index.html">Overview</a>
+      <a href="install.html" aria-current="page">Install</a>
+      <a href="usage.html">Using it</a>
+      <a href="configuration.html">Configuration</a>
+      <a href="engines.html">AI engines &amp; sandbox</a>
+      <a href="security.html">Privacy &amp; security</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+      <a href="https://github.com/pierrecagne/omarchy-arxiv">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+<h1>Install</h1>
+
+<div class="callout warn">
+  <strong>Read the code first</strong>
+  <p>This plugin was vibe coded with Claude Opus 5.5, and Omarchy plugins run
+  unsandboxed inside <code>omarchy-shell</code> with your permissions. Check
+  the <a href="https://github.com/pierrecagne/omarchy-arxiv">source</a> before
+  installing: a handful of short QML, JavaScript and Python files, plus the
+  prompts.</p>
+</div>
+
+<h2>Requirements</h2>
+<div class="table-wrap"><table>
+  <tr><th>What</th><th>Why</th><th>Notes</th></tr>
+  <tr><td>Omarchy 4 (Quattro shell)</td><td>The bar and panel</td><td>Ships <code>python3</code>, used by the helpers.</td></tr>
+  <tr><td>An AI engine</td><td>Reports</td><td>Claude Code, Codex, or a command-line LLM tool. Browsing works without one.</td></tr>
+  <tr><td><code>bwrap</code> (bubblewrap)</td><td>Sandboxing Codex</td><td>Only with Codex: <code>omarchy pkg add bubblewrap</code>.</td></tr>
+  <tr><td><code>pdftotext</code>, <code>pdfinfo</code> (poppler)</td><td>PDF-only papers</td><td>Optional. Most arXiv papers come with LaTeX source.</td></tr>
+</table></div>
+
+<h2>Install the plugin</h2>
+<pre><code>omarchy plugin add https://github.com/pierrecagne/omarchy-arxiv.git --enable</code></pre>
+<p>The arXiv icon appears in the center of the bar. Move it with, for example,
+<code>omarchy bar move io.github.pierrecagne.arxiv --section right</code>.</p>
+
+<p>Set the categories you follow, and who the reports are for:</p>
+<pre><code>omarchy bar set io.github.pierrecagne.arxiv categories "math.CT, cs.LO, cs.PL"
+omarchy bar set io.github.pierrecagne.arxiv reader "a working mathematician in categorical logic and type theory"
+omarchy bar set io.github.pierrecagne.arxiv reportStyle Theory</code></pre>
+<p>Category codes are listed in arXiv's
+<a href="https://arxiv.org/category_taxonomy">category taxonomy</a>. All the
+settings are on the <a href="configuration.html">configuration page</a>.</p>
+
+<h2 id="engine">Set up an AI engine</h2>
+
+<h3>Claude Code (default)</h3>
+<p>Install <a href="https://claude.com/claude-code">Claude Code</a> and log
+in once by running <code>claude</code> in a terminal. Reports use your Claude
+plan or API account.</p>
+<p>The sandbox relies on Claude Code's <code>--restricted</code> mode
+(tested with Claude Code 2.1.295). If your version lacks it, the plugin
+refuses to run sandboxed and says so: update Claude Code, or turn the sandbox
+off.</p>
+
+<h3>Codex</h3>
+<pre><code>omarchy bar set io.github.pierrecagne.arxiv engine Codex
+omarchy pkg add bubblewrap   # for the sandbox
+codex login</code></pre>
+<p>Reports use your ChatGPT plan or OpenAI API account. See
+<a href="engines.html#codex">Codex and the sandbox</a> if Codex keeps its login
+in the system keyring.</p>
+
+<h3>Any other model</h3>
+<p>Any command that reads a prompt on standard input and prints Markdown
+will do; the paper's text is included in the prompt. For example, with
+Simon Willison's <a href="https://llm.datasette.io/">llm</a> or with
+<a href="https://ollama.com/">Ollama</a>:</p>
+<pre><code>omarchy bar set io.github.pierrecagne.arxiv engine "Custom command"
+omarchy bar set io.github.pierrecagne.arxiv customCommand "llm -m gpt-4.1"
+# or: "ollama run qwen3"</code></pre>
+<p>A custom command runs with your permissions: the sandbox does not apply to
+it. <a href="engines.html#custom">Details.</a></p>
+
+<h2>First run</h2>
+<ol>
+  <li>Click the arXiv icon. The newest preprints of each category load in their tabs.</li>
+  <li>Move to a paper with <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>s</kbd> to star it.</li>
+  <li>Press <kbd>S</kbd>. A notification says the reports are being written, and another when they are ready.</li>
+  <li>Press <kbd>v</kbd> to read them in your browser.</li>
+</ol>
+
+<h2>Update</h2>
+<pre><code>omarchy plugin update io.github.pierrecagne.arxiv</code></pre>
+<p>Omarchy shows the changes before applying them.</p>
+
+<h2>Remove</h2>
+<pre><code>omarchy plugin remove io.github.pierrecagne.arxiv</code></pre>
+<p>To delete its state, cache and the downloaded reader assets as well:</p>
+<pre><code>rm -rf ~/.local/state/io.github.pierrecagne.arxiv ~/.cache/io.github.pierrecagne.arxiv</code></pre>
+<p>Your reports folder (<code>~/Documents/arxiv-reports</code> by default) is
+left alone.</p>
+<div class="pager"><a href="index.html">&larr; Overview</a><a href="usage.html">Using it &rarr;</a></div>
+</main>
+<footer class="site">
+  <div class="site-inner">
+    <p>This plugin was vibe coded with Claude Opus 5.5. Read and check the code
+    yourself before using it: like every Omarchy plugin it runs unsandboxed
+    inside <code>omarchy-shell</code> with your permissions.</p>
+    <p>Thank you to arXiv for use of its open access interoperability. This
+    project is not affiliated with or endorsed by arXiv, Anthropic or OpenAI.</p>
+    <p><a href="https://github.com/pierrecagne/omarchy-arxiv">Source on GitHub</a> · MIT License · by Pierre Cagne</p>
+  </div>
+</footer>
+</body>
+</html>

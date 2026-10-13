@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting · arXiv Reader for Omarchy</title>
+<meta name="description" content="Common problems and where to look.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="site-inner">
+    <div class="brand"><a href="index.html">arXiv Reader</a><span>an Omarchy plugin</span></div>
+    <nav class="site" aria-label="Documentation">
+      <a href="index.html">Overview</a>
+      <a href="install.html">Install</a>
+      <a href="usage.html">Using it</a>
+      <a href="configuration.html">Configuration</a>
+      <a href="engines.html">AI engines &amp; sandbox</a>
+      <a href="security.html">Privacy &amp; security</a>
+      <a href="troubleshooting.html" aria-current="page">Troubleshooting</a>
+      <a href="https://github.com/pierrecagne/omarchy-arxiv">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+<h1>Troubleshooting</h1>
+
+<h2>Where to look</h2>
+<p>Every report run is logged, with the settings it used and the exact
+engine command, in:</p>
+<pre><code>~/.local/state/io.github.pierrecagne.arxiv/digest.log</code></pre>
+<p>Problems with the widget itself show in the shell's log: find the
+instance with <code>qs list --all</code>, then run
+<code>qs log -i &lt;instance&gt; | grep arxiv</code>.</p>
+
+<h2>Listings</h2>
+<h3>“arXiv is rate-limiting its API (HTTP 429)” or “Cannot reach arXiv”</h3>
+<p>arXiv's API sheds load this way, sometimes for hours, and is sometimes
+just slow. Each tab keeps its last list with the warning, and the plugin
+retries on its own, backing off from 2 minutes to the refresh interval.
+Nothing to do but wait; <kbd>r</kbd> forces a new attempt.</p>
+
+<h3>A tab stays empty</h3>
+<p>Check the category code against arXiv's
+<a href="https://arxiv.org/category_taxonomy">taxonomy</a>: <code>math.CT</code>,
+not <code>Math.CT</code> or <code>category theory</code>.</p>
+
+<h2>Reports</h2>
+<h3>“The claude command is not on PATH” (or codex, or your command)</h3>
+<p>The helper runs with the environment of <code>omarchy-shell</code>, not of
+your terminal. If the engine is installed somewhere only your shell
+configuration adds to <code>PATH</code>, make it visible to the session, or
+use its absolute path in a custom command.</p>
+
+<h3>“This Claude Code has no --restricted mode”</h3>
+<p>The sandbox needs a recent Claude Code. Update it (<code>claude update</code>),
+or turn the sandbox off with
+<code>omarchy bar set io.github.pierrecagne.arxiv sandbox false --json</code>.</p>
+
+<h3>“Sandboxing Codex needs bubblewrap”</h3>
+<p>Install it with <code>omarchy pkg add bubblewrap</code>, or turn the
+sandbox off.</p>
+
+<h3>Codex fails to log in when sandboxed</h3>
+<p>See <a href="engines.html#codex">Codex login in the keyring</a>.</p>
+
+<h3>“returned too little to be a report”</h3>
+<p>The engine answered with under 400 characters: usually an error message
+or a refusal. The log shows what it said. With a custom command, check that
+it prints to standard output and that the model's context window can hold a
+whole paper.</p>
+
+<h3>“The report style is Custom but the prompt file … does not exist”</h3>
+<p>Set <code>promptFile</code> to an existing file, or pick another
+<code>reportStyle</code>.</p>
+
+<h3>A report is wrong, or pitched at the wrong level</h3>
+<p>Make the <code>reader</code> description more specific, try another
+<code>reportStyle</code> or a stronger <code>model</code>. To regenerate a
+report, delete its Markdown file and press <kbd>S</kbd>.</p>
+
+<h2>Reader</h2>
+<h3>“Port 8791 is taken by another program”</h3>
+<p>Choose a free port:
+<code>omarchy bar set io.github.pierrecagne.arxiv readerPort 8795 --json</code>.</p>
+
+<h3>The mathematics does not render</h3>
+<p>The first time the reader starts, it downloads KaTeX; if that failed, the
+pages load it from the CDN instead, which needs a connection. The download is
+retried the next time the reader starts, for example after you log in
+again.</p>
+<div class="pager"><a href="security.html">&larr; Privacy &amp; security</a><span></span></div>
+</main>
+<footer class="site">
+  <div class="site-inner">
+    <p>This plugin was vibe coded with Claude Opus 5.5. Read and check the code
+    yourself before using it: like every Omarchy plugin it runs unsandboxed
+    inside <code>omarchy-shell</code> with your permissions.</p>
+    <p>Thank you to arXiv for use of its open access interoperability. This
+    project is not affiliated with or endorsed by arXiv, Anthropic or OpenAI.</p>
+    <p><a href="https://github.com/pierrecagne/omarchy-arxiv">Source on GitHub</a> · MIT License · by Pierre Cagne</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arXiv Reader for Omarchy</title>
+<meta name="description" content="The newest arXiv preprints in the Omarchy bar, and AI reading reports written for your expertise.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="site-inner">
+    <div class="brand"><a href="index.html">arXiv Reader</a><span>an Omarchy plugin</span></div>
+    <nav class="site" aria-label="Documentation">
+      <a href="index.html" aria-current="page">Overview</a>
+      <a href="install.html">Install</a>
+      <a href="usage.html">Using it</a>
+      <a href="configuration.html">Configuration</a>
+      <a href="engines.html">AI engines &amp; sandbox</a>
+      <a href="security.html">Privacy &amp; security</a>
+      <a href="troubleshooting.html">Troubleshooting</a>
+      <a href="https://github.com/pierrecagne/omarchy-arxiv">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+<h1>arXiv Reader for Omarchy</h1>
+<p class="lead">The newest preprints of your arXiv categories in the Omarchy bar,
+and AI reading reports on the ones you star, written for your own expertise.</p>
+
+<div class="actions">
+  <a class="button primary" href="install.html">Install</a>
+  <a class="button" href="https://github.com/pierrecagne/omarchy-arxiv">Source on GitHub</a>
+</div>
+
+<figure>
+  <img src="images/preview.png" width="1093" height="670"
+       alt="The panel listing math.CT preprints, next to a rendered reading report with typeset mathematics">
+</figure>
+
+<div class="callout warn">
+  <strong>Vibe coded with Claude Opus 5.5</strong>
+  <p>By installing this plugin you accept that it is your responsibility to
+  read and check its code before using it. Like every Omarchy plugin, it runs
+  unsandboxed inside <code>omarchy-shell</code> with your permissions.</p>
+</div>
+
+<h2>What it does</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Browse</h3>
+    <p>One tab per arXiv category, newest submissions first: title, authors,
+    date, cross-lists, and the abstract one keypress away. TeX in titles and
+    abstracts is turned into readable symbols.</p>
+  </div>
+  <div class="card">
+    <h3>Star</h3>
+    <p>Press <kbd>s</kbd> on a preprint, or <kbd>a</kbd> to star any paper by
+    its identifier or link, however old.</p>
+  </div>
+  <div class="card">
+    <h3>Get reports</h3>
+    <p>Press <kbd>S</kbd>: an AI reads each starred paper in full, from its
+    LaTeX source when arXiv has it, and writes a Markdown report on it.</p>
+  </div>
+  <div class="card">
+    <h3>Read</h3>
+    <p>Press <kbd>v</kbd> to read the reports in your browser with the
+    mathematics typeset by KaTeX. The Markdown files stay yours.</p>
+  </div>
+</div>
+
+<h2>Reports written for you</h2>
+<ul>
+  <li><strong>Who they are for.</strong> Describe your expertise, such as
+  <em>“a working mathematician in categorical logic and type theory”</em> or
+  <em>“an ML engineer who builds retrieval systems”</em>, and each report is
+  pitched at that level: nothing you know is explained, nothing you would not
+  know is skipped.</li>
+  <li><strong>Report style.</strong> <em>Theory</em> states theorems with
+  their hypotheses and sketches the proofs; <em>Empirical</em> reports claims
+  with their numbers, the method and the evaluation; <em>Auto</em> adapts to
+  the paper; or bring your <a href="configuration.html#custom-prompts">own
+  prompt</a>.</li>
+  <li><strong>Your choice of AI.</strong> Claude Code, Codex, or any command
+  that reads a prompt on standard input and prints Markdown.
+  <a href="engines.html">More on engines.</a></li>
+  <li><strong>Sandboxed by default.</strong> Claude Code and Codex can read
+  only the paper being reported on, plus any folders you allow, such as your
+  own notes, so a report can relate the paper to your work. They can never
+  write files. <a href="engines.html#sandbox">How the sandbox works.</a></li>
+</ul>
+
+<h2>Quick start</h2>
+<pre><code>omarchy plugin add https://github.com/pierrecagne/omarchy-arxiv.git --enable
+omarchy bar set io.github.pierrecagne.arxiv categories "math.CT, cs.LO"
+omarchy bar set io.github.pierrecagne.arxiv reader "a working mathematician in categorical logic"</code></pre>
+<p>Then click the arXiv icon in the bar. Reports need an AI engine:
+see <a href="install.html#engine">setting one up</a>.</p>
+
+<h2>Screenshots</h2>
+<div class="shots">
+  <figure>
+    <img class="shot" src="images/panel.png" width="518" height="622" alt="The panel on the math.CT tab, listing recent preprints">
+    <figcaption>One tab per category; star, open the abstract page or the PDF.</figcaption>
+  </figure>
+  <figure>
+    <img class="shot" src="images/starred.png" width="520" height="251" alt="The starred tab, with one paper marked as having a report">
+    <figcaption>The starred tab: <kbd>S</kbd> writes the missing reports.</figcaption>
+  </figure>
+  <figure>
+    <img class="shot" src="images/report.png" width="1000" height="1180" alt="A reading report rendered in the browser, with typeset theorems">
+    <figcaption>A Theory report, read in the local reader.</figcaption>
+  </figure>
+</div>
+<div class="pager"><span></span><a href="install.html">Install &rarr;</a></div>
+</main>
+<footer class="site">
+  <div class="site-inner">
+    <p>This plugin was vibe coded with Claude Opus 5.5. Read and check the code
+    yourself before using it: like every Omarchy plugin it runs unsandboxed
+    inside <code>omarchy-shell</code> with your permissions.</p>
+    <p>Thank you to arXiv for use of its open access interoperability. This
+    project is not affiliated with or endorsed by arXiv, Anthropic or OpenAI.</p>
+    <p><a href="https://github.com/pierrecagne/omarchy-arxiv">Source on GitHub</a> · MIT License · by Pierre Cagne</p>
+  </div>
+</footer>
+</body>
+</html>

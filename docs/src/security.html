@@ -1,0 +1,96 @@
+<h1>Privacy and security</h1>
+
+<div class="callout warn">
+  <strong>Vibe coded: check before you trust</strong>
+  <p>This plugin was written with Claude Opus 5.5. Like every Omarchy plugin
+  it runs unsandboxed inside <code>omarchy-shell</code>, with your
+  permissions. The sandbox described here confines the AI engine, not the
+  plugin itself. Read the code before installing it.</p>
+</div>
+
+<h2>What runs</h2>
+<ul>
+  <li>The widget (<code>ArxivPanel.qml</code>, <code>Model.js</code>,
+  <code>Tex.js</code>), inside <code>omarchy-shell</code>.</li>
+  <li><code>fetch.py</code>, which lists and looks up preprints.</li>
+  <li><code>digest.py</code>, when you press <kbd>S</kbd>: it downloads the
+  starred papers and runs your AI engine.</li>
+  <li><code>serve.py</code>, when you press <kbd>v</kbd>: the local report
+  reader. It keeps running until you log out.</li>
+</ul>
+
+<h2>Network</h2>
+<div class="table-wrap"><table>
+  <tr><th>Destination</th><th>When</th><th>What</th></tr>
+  <tr><td><code>export.arxiv.org</code></td><td>Every refresh (default 30 min), and when starring by identifier</td><td>Listing queries for your categories, at most one every 3 seconds, cached on disk</td></tr>
+  <tr><td><code>arxiv.org</code></td><td>Summarising</td><td>The source archive or PDF of each starred paper</td></tr>
+  <tr><td>Your AI provider</td><td>Summarising</td><td>The prompt and the paper, plus whatever the engine reads from your extra folders, through Claude Code, Codex or your command, under your own account</td></tr>
+  <tr><td><code>cdn.jsdelivr.net</code></td><td>The first time the reader opens</td><td>KaTeX 0.16.11 and marked 12.0.2, stored locally afterwards</td></tr>
+</table></div>
+<p>Requests to arXiv identify themselves as
+<code>omarchy-arxiv-reader/1.0</code> with a link to this project. Nothing
+else is sent anywhere: no analytics, no accounts.</p>
+
+<h2>Files</h2>
+<div class="table-wrap"><table>
+  <tr><th>Path</th><th>Contents</th></tr>
+  <tr><td><code>~/.local/state/io.github.pierrecagne.arxiv/</code></td><td><code>starred.json</code>, <code>reports.json</code>, <code>digest.log</code>, the reader's assets (<code>web/</code>) and the scratch folder for papers being summarised (<code>work/</code>)</td></tr>
+  <tr><td><code>~/.cache/io.github.pierrecagne.arxiv/</code></td><td>The cached listings</td></tr>
+  <tr><td>Your reports folder</td><td>One Markdown file per report</td></tr>
+</table></div>
+<p>The plugin writes nowhere else, and never changes your configuration
+beyond what Omarchy itself stores for the widget.</p>
+
+<h2 id="papers">Untrusted papers</h2>
+<p>A paper is text written by a stranger and handed to a model that can
+read files. The plugin defends against a paper that tries to steer the
+model in four ways:</p>
+<ol>
+  <li><strong>The sandbox</strong> (on by default) limits what Claude Code
+  and Codex can read to the paper and the folders you allow. See
+  <a href="engines.html#sandbox">how it works</a> and how it was tested.</li>
+  <li><strong>No writes, no shell for Claude Code, no network for Codex's
+  commands</strong>, whatever the sandbox setting.</li>
+  <li><strong>The prompt</strong> tells the model to treat the paper as
+  material, never as instructions, and to report any attempt.</li>
+  <li><strong>The source archive is filtered</strong>: only plain text files
+  (<code>.tex</code>, <code>.bbl</code>, <code>.bib</code>, <code>.sty</code>,
+  <code>.cls</code>, <code>.txt</code>) under 4 MB are extracted, flattened
+  into one folder, and nothing can be written outside it.</li>
+</ol>
+
+<h2 id="reader">The report reader</h2>
+<p>Reports are written by a model from untrusted papers, so the reader
+treats them as untrusted too:</p>
+<ul>
+  <li>It listens on <code>127.0.0.1</code> only, and answers only requests
+  addressed to <code>127.0.0.1</code> or <code>localhost</code> on its port,
+  which defeats DNS-rebinding pages.</li>
+  <li>Raw HTML in a report is shown as text. Links keep only
+  <code>http</code>, <code>https</code>, <code>mailto</code> and in-page
+  targets, and images are replaced by their description.</li>
+  <li>A Content-Security-Policy allows no script but the reader's own, no
+  outside images, frames, forms or network requests.</li>
+  <li>It serves only the files directly inside the reports folder and its
+  own KaTeX and marked assets.</li>
+</ul>
+<p>This was checked with a planted report containing a script tag, an image
+with an <code>onerror</code> handler, an outside image and a
+<code>javascript:</code> link: none of them ran or loaded, and the mathematics
+still rendered.</p>
+
+<h2>Limits</h2>
+<ul>
+  <li>A <a href="engines.html#custom">custom command</a> runs with your
+  permissions; the sandbox does not apply to it.</li>
+  <li>In the Codex sandbox, the system folders <code>/usr</code>,
+  <code>/etc</code> and <code>/opt</code> remain readable.</li>
+  <li>The Claude Code sandbox is Claude Code's own <code>--restricted</code>
+  mode: it is as strong as Claude Code makes it.</li>
+  <li>The model may quote your extra folders in a report, and what it reads
+  goes to its provider.</li>
+  <li>Reports can be wrong. They are a guide to the paper, not a substitute
+  for it.</li>
+</ul>
+<p>Found a problem? Please open an issue on
+<a href="https://github.com/pierrecagne/omarchy-arxiv/issues">GitHub</a>.</p>
